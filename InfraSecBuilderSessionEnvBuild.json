@@ -1,0 +1,1096 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "This stack builds a sample environment to demonstrate the way Security Groups, NACL's, and Systems Manager can improve security compared to an on-premises environment. This CloudFormation Template creates an architecture that contains multiple network topographies. Includes Amazon EC2 instance running the Amazon Linux AMI. The AMI is chosen based on the region in which the stack is run. **WARNING** This template creates an Amazon EC2 instance. You will be billed for the AWS resources used if you create a stack from this template.",
+  "Parameters" : {
+    "PassedKeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "ConstraintDescription" : "Must be the name of an existing EC2 KeyPair.",
+	  "AllowedPattern" : ".+"
+    },
+	"AvailabilityZone1": {
+		"Type" : "AWS::EC2::AvailabilityZone::Name",
+		"Description" : "Pick your primary Availability Zone.",
+		"AllowedPattern" : ".+"
+	},
+	"AvailabilityZone2": {
+		"Type" : "AWS::EC2::AvailabilityZone::Name",
+		"Description" : "Pick your secondary Availability Zone.",
+		"ConstraintDescription" : "Please pick a different Availability Zone than your Primary.",
+		"AllowedPattern" : ".+"
+	},
+	"LatestLinuxAmiId" : {
+		"Type" : "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+		"Description" : "Which machine image should be used for the demo? Amazon Linux 2 is recommended.",
+		"Default" : "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2",
+		"ConstraintDescription" : "At this time this has only been tested on the default value."
+	}
+  },
+  "Mappings" : {
+	"IpAddressesForEnv" : {
+		"WebAppVPC" : {	"WebAppVPCCidr" : "10.0.0.0/16", "WebAppPublicSubnetAZ1" : "10.0.0.0/24", "WebAppWebSubnetAZ1" : "10.0.1.0/24", "WebAppDbSubnetAZ1" : "10.0.2.0/24", "WebAppPublicSubnetAZ2" : "10.0.128.0/24", "WebAppWebSubnetAZ2" : "10.0.129.0/24", "WebAppDbSubnetAZ2" : "10.0.130.0/24"},
+		"ServicesVPC" : { "ServicesVPCCidr" : "10.1.0.0/16", "ServicesSubnetAZ1" : "10.1.0.0/24", "ServicesSubnetAZ2" : "10.1.128.0/24"},
+		"PoCVPC" : { "PoCVPCCidr" : "10.250.0.0/16", "PoCPublicSubnetAZ1" : "10.250.0.0/24", "PoCPrivateSubnetAZ1" : "10.250.1.0/24", "PoCPublicSubnetAZ2" : "10.250.128.0/24", "PoCPrivateSubnetAZ2" : "10.250.129.0/24"},
+		"OnPrem" : {"OnPremCidr" : "192.168.0.0/16"}
+	}
+  },
+  "Resources" : {
+	"WebAppVPC" : {
+		"Type" : "AWS::EC2::VPC",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppVPCCidr"]},
+			"EnableDnsHostnames" : "True",
+			"EnableDnsSupport" : "True",
+			"Tags" : [ { "Key" : "Name", "Value" : "Web Application VPC" } ]
+		}
+	},
+	"ServicesVPC" : {
+		"Type" : "AWS::EC2::VPC",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]},
+			"EnableDnsHostnames" : "True",
+			"EnableDnsSupport" : "True",
+			"Tags" : [ { "Key" : "Name", "Value" : "Services VPC" } ]
+		}
+	},
+	"PoCVPC" : {
+		"Type" : "AWS::EC2::VPC",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "PoCVPC", "PoCVPCCidr"]},
+			"EnableDnsHostnames" : "True",
+			"EnableDnsSupport" : "True",
+			"Tags" : [ { "Key" : "Name", "Value" : "Proof of Concept VPC" } ]
+		}
+	},
+	"WebAppInternetGateway" : {
+		"Type" : "AWS::EC2::InternetGateway",
+		"Properties" : {
+			"Tags" : [ { "Key" : "Name", "Value" : "Web App VPC Internet Gateway" } ]
+		}
+	},
+	"PoCInternetGateway" : {
+		"Type" : "AWS::EC2::InternetGateway",
+		"Properties" : {
+			"Tags" : [ { "Key" : "Name", "Value" : "Proof of Concept VPC Internet Gateway" } ]
+		}
+	},	
+	"HostVPNGateway" : {
+		"Type" : "AWS::EC2::VPNGateway",
+		"Properties" : {
+			"Type" : "ipsec.1",
+			"Tags" : [ { "Key" : "Name", "Value" : "Mock VPN Gateway" } ]
+		}
+	},
+	"WebAppGWAttachment" : {
+		"Type" : "AWS::EC2::VPCGatewayAttachment",
+		"Properties" : {
+			"InternetGatewayId" : { "Ref" : "WebAppInternetGateway" },
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+		"DependsOn" : [ "WebAppInternetGateway", "WebAppVPC" ]
+	},
+	"PoCGWAttachment" : {
+		"Type" : "AWS::EC2::VPCGatewayAttachment",
+		"Properties" : {
+			"InternetGatewayId" : { "Ref" : "PoCInternetGateway" },
+			"VpcId" : { "Ref" : "PoCVPC" }
+		},
+		"DependsOn" : [ "PoCInternetGateway", "PoCVPC" ]
+	},
+	"ServicesGWAttachment" : {
+		"Type" : "AWS::EC2::VPCGatewayAttachment",
+		"Properties" : {
+			"VpnGatewayId" : { "Ref" : "HostVPNGateway" },
+			"VpcId" : { "Ref" : "ServicesVPC" }
+		},
+		"DependsOn" : [ "HostVPNGateway", "ServicesVPC" ]
+	},
+	"WebApp2ServicesPeer" : {
+	   "Type" : "AWS::EC2::VPCPeeringConnection",
+	   "Properties" : {
+		  "PeerVpcId" : { "Ref" : "WebAppVPC" },
+		  "VpcId" : { "Ref" : "ServicesVPC" }
+	   },
+	   "DependsOn" : [ "WebAppVPC", "ServicesVPC" ]
+	},
+	"PoC2ServicesPeer" : {
+	   "Type" : "AWS::EC2::VPCPeeringConnection",
+	   "Properties" : {
+		  "PeerVpcId" : { "Ref" : "PoCVPC" },
+		  "VpcId" : { "Ref" : "ServicesVPC" }
+	   },
+	   "DependsOn" : [ "PoCVPC", "ServicesVPC" ]
+	},
+	"WebAppPublicSubnetAZ1" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppPublicSubnetAZ1"]},
+			"MapPublicIpOnLaunch" : "true",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App Public Subnet in AZ1" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone1" },
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+	   "DependsOn" : "WebAppVPC"
+	},
+	"WebAppWebSubnetAZ1" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppWebSubnetAZ1"]},
+			"MapPublicIpOnLaunch" : "true",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App Web Subnet in AZ1" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone1" },
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+	   "DependsOn" : "WebAppVPC"
+	},
+	"WebAppDbSubnetAZ1" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppDbSubnetAZ1"]},
+			"MapPublicIpOnLaunch" : "false",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App DB Subnet in AZ1" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone1" },
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+	   "DependsOn" : "WebAppVPC"
+	},
+	"WebAppPublicSubnetAZ2" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppPublicSubnetAZ2"]},
+			"MapPublicIpOnLaunch" : "true",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App Public Subnet in AZ2" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone2" },
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+	   "DependsOn" : "WebAppVPC"
+	},
+	"WebAppWebSubnetAZ2" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppWebSubnetAZ2"]},
+			"MapPublicIpOnLaunch" : "true",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App Web Subnet in AZ2" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone2" },
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+	   "DependsOn" : "WebAppVPC"
+	},
+	"WebAppDbSubnetAZ2" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppDbSubnetAZ2"]},
+			"MapPublicIpOnLaunch" : "false",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App DB Subnet in AZ2" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone2" },
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+	   "DependsOn" : "WebAppVPC"
+	},
+	"ServicesSubnetAZ1" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesSubnetAZ1"]},
+			"MapPublicIpOnLaunch" : "false",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Services Subnet in AZ1" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone1" },
+			"VpcId" : { "Ref" : "ServicesVPC" }
+		},
+	   "DependsOn" : "ServicesVPC"
+	},
+	"ServicesSubnetAZ2" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesSubnetAZ2"]},
+			"MapPublicIpOnLaunch" : "false",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Services Subnet in AZ2" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone2" },
+			"VpcId" : { "Ref" : "ServicesVPC" }
+		},
+	   "DependsOn" : "ServicesVPC"
+	},
+	"PoCPublicSubnetAZ1" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "PoCVPC", "PoCPublicSubnetAZ1"]},
+			"MapPublicIpOnLaunch" : "true",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Proof of Concept Public Subnet in AZ1" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone1" },
+			"VpcId" : { "Ref" : "PoCVPC" }
+		},
+	   "DependsOn" : "PoCVPC"
+	},
+	"PoCPrivateSubnetAZ1" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "PoCVPC", "PoCPrivateSubnetAZ1"]},
+			"MapPublicIpOnLaunch" : "false",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Proof of Concept Private Subnet in AZ1" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone1" },
+			"VpcId" : { "Ref" : "PoCVPC" }
+		},
+	   "DependsOn" : "PoCVPC"
+	},
+	"PoCPublicSubnetAZ2" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "PoCVPC", "PoCPublicSubnetAZ2"]},
+			"MapPublicIpOnLaunch" : "true",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Proof of Concept Public Subnet in AZ2" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone2" },
+			"VpcId" : { "Ref" : "PoCVPC" }
+		},
+	   "DependsOn" : "PoCVPC"
+	},
+	"PoCPrivateSubnetAZ2" : {
+		"Type" : "AWS::EC2::Subnet",
+		"Properties" : {
+			"CidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "PoCVPC", "PoCPrivateSubnetAZ2"]},
+			"MapPublicIpOnLaunch" : "false",
+			"Tags" : [ { "Key" : "Name" , "Value" : "Proof of Concept Private Subnet in AZ2" } ],
+			"AvailabilityZone" : { "Ref" : "AvailabilityZone2" },
+			"VpcId" : { "Ref" : "PoCVPC" }
+		},
+	   "DependsOn" : "PoCVPC"
+	},
+	"WebAppEipAZ1" : {
+		"Type" : "AWS::EC2::EIP",
+		"Properties" : {
+			"Domain" : "vpc"
+		}
+	},
+	"WebAppNatGatewayAZ1" : {
+		"Type" : "AWS::EC2::NatGateway",
+		"Properties" : {
+			"AllocationId" : { "Fn::GetAtt" : ["WebAppEipAZ1", "AllocationId"] },
+			"SubnetId" : { "Ref" : "WebAppPublicSubnetAZ1" }
+		},
+		"DependsOn" : [ "WebAppPublicSubnetAZ1", "WebAppEipAZ1" ]
+	},
+	"WebAppPublicRouteTable" : {
+		"Type" : "AWS::EC2::RouteTable",
+		"Properties" : {
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App VPC Public Route Table" } ],
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+		"DependsOn" : "WebAppVPC"
+	},
+	"WebAppIGRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : "0.0.0.0/0",
+			"GatewayId" : { "Ref" : "WebAppInternetGateway" },
+			"RouteTableId" : { "Ref" : "WebAppPublicRouteTable" }
+		},
+		"DependsOn" : [ "WebAppGWAttachment" , "WebAppPublicRouteTable" ]
+	},
+	"WebAppPublicPeeringRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]},
+			"VpcPeeringConnectionId" : { "Ref" : "WebApp2ServicesPeer" },
+			"RouteTableId" : { "Ref" : "WebAppPublicRouteTable" }
+		},
+		"DependsOn" : [ "WebApp2ServicesPeer" , "WebAppPublicRouteTable" ]
+	},
+	"WebAppPrivateRouteTable" : {
+		"Type" : "AWS::EC2::RouteTable",
+		"Properties" : {
+			"Tags" : [ { "Key" : "Name" , "Value" : "Web App VPC Private Route Table" } ],
+			"VpcId" : { "Ref" : "WebAppVPC" }
+		},
+		"DependsOn" : "WebAppVPC"
+	},
+	"WebAppPrivatePeeringRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]},
+			"VpcPeeringConnectionId" : { "Ref" : "WebApp2ServicesPeer" },
+			"RouteTableId" : { "Ref" : "WebAppPrivateRouteTable" }
+		},
+		"DependsOn" : [ "WebApp2ServicesPeer" , "WebAppPrivateRouteTable" ]
+	},
+	"WebAppPrivateNatRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : "0.0.0.0/0",
+			"NatGatewayId" : { "Ref" : "WebAppNatGatewayAZ1" },
+			"RouteTableId" : { "Ref" : "WebAppPrivateRouteTable" }
+		},
+		"DependsOn" : [ "WebAppNatGatewayAZ1" , "WebAppPrivateRouteTable" ]
+	},
+	"WebAppPublicRoutingAssocAZ1" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "WebAppPublicRouteTable" },
+			"SubnetId" : { "Ref" : "WebAppPublicSubnetAZ1" }
+		},
+		"DependsOn" : [ "WebAppPublicSubnetAZ1" , "WebAppPublicRouteTable" ]
+	},
+	"WebAppPublicRoutingAssocAZ2" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "WebAppPublicRouteTable" },
+			"SubnetId" : { "Ref" : "WebAppPublicSubnetAZ2" }
+		},
+		"DependsOn" : [ "WebAppPublicSubnetAZ2" , "WebAppPublicRouteTable" ]
+	},
+	"WebAppDbRoutingAssocAZ1" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "WebAppPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "WebAppDbSubnetAZ1" }
+		},
+		"DependsOn" : [ "WebAppDbSubnetAZ1" , "WebAppPrivateRouteTable" ]
+	},
+	"WebAppDbRoutingAssocAZ2" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "WebAppPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "WebAppDbSubnetAZ2" }
+		},
+		"DependsOn" : [ "WebAppDbSubnetAZ2" , "WebAppPrivateRouteTable" ]
+	},
+	"WebAppWebRoutingAssocAZ1" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "WebAppPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "WebAppWebSubnetAZ1" }
+		},
+		"DependsOn" : [ "WebAppWebSubnetAZ1" , "WebAppPrivateRouteTable" ]
+	},
+	"WebAppWebRoutingAssocAZ2" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "WebAppPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "WebAppWebSubnetAZ2" }
+		},
+		"DependsOn" : [ "WebAppWebSubnetAZ2" , "WebAppPrivateRouteTable" ]
+	},
+	"ServicesPrivateRouteTable" : {
+		"Type" : "AWS::EC2::RouteTable",
+		"Properties" : {
+			"Tags" : [ { "Key" : "Name" , "Value" : "Services VPC Private Route Table" } ],
+			"VpcId" : { "Ref" : "ServicesVPC" }
+		},
+		"DependsOn" : "ServicesVPC"
+	},
+	"ServicesPrivateOnPremRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "OnPrem", "OnPremCidr"]},
+			"GatewayId" : { "Ref" : "HostVPNGateway" },
+			"RouteTableId" : { "Ref" : "ServicesPrivateRouteTable" }
+		},
+		"DependsOn" : [ "ServicesGWAttachment" , "ServicesPrivateRouteTable" ]
+	},
+	"ServicesPrivatePeeringRoute1" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppVPCCidr"]},
+			"VpcPeeringConnectionId" : { "Ref" : "WebApp2ServicesPeer" },
+			"RouteTableId" : { "Ref" : "ServicesPrivateRouteTable" }
+		},
+		"DependsOn" : [ "WebApp2ServicesPeer" , "ServicesPrivateRouteTable" ]
+	},
+	"ServicesPrivateRoutingAssocAZ1" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "ServicesPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "ServicesSubnetAZ1" }
+		},
+		"DependsOn" : [ "ServicesSubnetAZ1" , "ServicesPrivateRouteTable" ]
+	},
+	"ServicesPrivateRoutingAssocAZ2" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "ServicesPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "ServicesSubnetAZ2" }
+		},
+		"DependsOn" : [ "ServicesSubnetAZ2" , "ServicesPrivateRouteTable" ]
+	},
+	"PoCPublicRouteTable" : {
+		"Type" : "AWS::EC2::RouteTable",
+		"Properties" : {
+			"Tags" : [ { "Key" : "Name" , "Value" : "Proof of Concept VPC Public Route Table" } ],
+			"VpcId" : { "Ref" : "PoCVPC" }
+		},
+		"DependsOn" : "PoCVPC"
+	},
+	"PoCIGRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : "0.0.0.0/0",
+			"GatewayId" : { "Ref" : "PoCInternetGateway" },
+			"RouteTableId" : { "Ref" : "PoCPublicRouteTable" }
+		},
+		"DependsOn" : [ "PoCGWAttachment" , "PoCPublicRouteTable" ]
+	},
+	"PoCPublicPeeringRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]},
+			"VpcPeeringConnectionId" : { "Ref" : "PoC2ServicesPeer" },
+			"RouteTableId" : { "Ref" : "PoCPublicRouteTable" }
+		},
+		"DependsOn" : [ "PoC2ServicesPeer" , "PoCPublicRouteTable" ]
+	},
+	"PoCPrivateRouteTable" : {
+		"Type" : "AWS::EC2::RouteTable",
+		"Properties" : {
+			"Tags" : [ { "Key" : "Name" , "Value" : "Proof of Concept VPC Private Route Table" } ],
+			"VpcId" : { "Ref" : "PoCVPC" }
+		},
+		"DependsOn" : "PoCVPC"
+	},
+	"PoCPrivatePeeringRoute" : {
+		"Type" : "AWS::EC2::Route",
+		"Properties" : {
+			"DestinationCidrBlock" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]},
+			"VpcPeeringConnectionId" : { "Ref" : "PoC2ServicesPeer" },
+			"RouteTableId" : { "Ref" : "PoCPrivateRouteTable" }
+		},
+		"DependsOn" : [ "PoC2ServicesPeer" , "PoCPrivateRouteTable" ]
+	},
+	"PoCPublicRoutingAssocAZ1" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "PoCPublicRouteTable" },
+			"SubnetId" : { "Ref" : "PoCPublicSubnetAZ1" }
+		},
+		"DependsOn" : [ "PoCPublicSubnetAZ1" , "PoCPublicRouteTable" ]
+	},
+	"PoCPublicRoutingAssocAZ2" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "PoCPublicRouteTable" },
+			"SubnetId" : { "Ref" : "PoCPublicSubnetAZ2" }
+		},
+		"DependsOn" : [ "PoCPublicSubnetAZ2" , "PoCPublicRouteTable" ]
+	},
+	"PoCPrivateRoutingAssocAZ1" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "PoCPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "PoCPrivateSubnetAZ1" }
+		},
+		"DependsOn" : [ "PoCPrivateSubnetAZ1" , "PoCPrivateRouteTable" ]
+	},
+	"PoCPrivateRoutingAssocAZ2" : {
+		"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+		"Properties" : {
+			"RouteTableId" : { "Ref" : "PoCPrivateRouteTable" },
+			"SubnetId" : { "Ref" : "PoCPrivateSubnetAZ2" }
+		},
+		"DependsOn" : [ "PoCPrivateSubnetAZ2" , "PoCPrivateRouteTable" ]
+	},
+	"WebAppLoadBalancerSecurityGroup" : {
+		"Type" : "AWS::EC2::SecurityGroup",
+		"Properties" : {
+			"GroupName" : "WebApp Application Load Balancer Security Group",
+			"GroupDescription" : "Opens HTTP for Load Balancer to the Internet",
+			"VpcId" : { "Ref" : "WebAppVPC" },
+			"SecurityGroupIngress" : [{
+				"IpProtocol" : "tcp",
+				"FromPort" : 80,
+				"ToPort" : 80,
+				"CidrIp" : "0.0.0.0/0"
+			 }]
+		},
+		"DependsOn" : "WebAppVPC"
+	},
+	"WebAppWebServerSecurityGroup" : {
+		"Type" : "AWS::EC2::SecurityGroup",
+		"Properties" : {
+			"GroupName" : "WebApp Web Server Security Group",
+			"GroupDescription" : "Opens HTTP for Web Servers to Load Balancer",
+			"VpcId" : { "Ref" : "WebAppVPC" },
+			"SecurityGroupIngress" : [{
+				"IpProtocol" : "tcp",
+				"FromPort" : 80,
+				"ToPort" : 80,
+				"SourceSecurityGroupId" : { "Ref" : "WebAppLoadBalancerSecurityGroup" }
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 22,
+				"ToPort" : 22,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]}
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 3389,
+				"ToPort" : 3389,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]}
+			}]
+		},
+		"DependsOn" : [ "WebAppVPC" , "WebAppLoadBalancerSecurityGroup" ]
+	},
+	"WebAppLB2ServerSecurityGroupRule" : {
+		"Type": "AWS::EC2::SecurityGroupEgress",
+		"Properties" : {
+			"IpProtocol" : "tcp",
+			"FromPort" : 80,
+			"ToPort" : 80,
+			"DestinationSecurityGroupId" : { 
+				"Fn::GetAtt" : [ "WebAppWebServerSecurityGroup", "GroupId" ]
+			},
+			"GroupId" : {
+				"Fn::GetAtt" : [ "WebAppLoadBalancerSecurityGroup", "GroupId" ]
+			}
+		},
+		"DependsOn" : [ "WebAppWebServerSecurityGroup" , "WebAppLoadBalancerSecurityGroup" ]
+	},
+	"WebAppDbServerSecurityGroup" : {
+		"Type" : "AWS::EC2::SecurityGroup",
+		"Properties" : {
+			"GroupName" : "WebApp Database Server Security Group",
+			"GroupDescription" : "Opens mysql (3306) port for Database Servers to Web Servers",
+			"VpcId" : { "Ref" : "WebAppVPC" },
+			"SecurityGroupIngress" : [{
+				"IpProtocol" : "tcp",
+				"FromPort" : 3306,
+				"ToPort" : 3306,
+				"SourceSecurityGroupId" : { "Ref" : "WebAppWebServerSecurityGroup" }
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 22,
+				"ToPort" : 22,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]}
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 3389,
+				"ToPort" : 3389,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]}
+			}]
+		},
+		"DependsOn" : [ "WebAppVPC" , "WebAppWebServerSecurityGroup" ]
+	},
+	"ServicesServerSecurityGroup" : {
+		"Type" : "AWS::EC2::SecurityGroup",
+		"Properties" : {
+			"GroupName" : "Services Server Security Group",
+			"GroupDescription" : "Opens SSH and RDP ports inbound and outbound",
+			"VpcId" : { "Ref" : "ServicesVPC" },
+			"SecurityGroupIngress" : [{
+				"IpProtocol" : "tcp",
+				"FromPort" : 22,
+				"ToPort" : 22,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "OnPrem", "OnPremCidr"]}
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 3389,
+				"ToPort" : 3389,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "OnPrem", "OnPremCidr"]}
+			}],			
+			"SecurityGroupEgress" : [{
+				"IpProtocol" : "tcp",
+				"FromPort" : 22,
+				"ToPort" : 22,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppVPCCidr"]}
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 3389,
+				"ToPort" : 3389,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "WebAppVPC", "WebAppVPCCidr"]}
+			}]
+		},
+		"DependsOn" : "ServicesVPC"
+	},
+	"PoCServerSecurityGroup" : {
+		"Type" : "AWS::EC2::SecurityGroup",
+		"Properties" : {
+			"GroupName" : "PoC Web Server Security Group",
+			"GroupDescription" : "Opens HTTP for Proof of Concept Web Servers to the internet",
+			"VpcId" : { "Ref" : "PoCVPC" },
+			"SecurityGroupIngress" : [{
+				"IpProtocol" : "tcp",
+				"FromPort" : 80,
+				"ToPort" : 80,
+				"CidrIp" : "0.0.0.0/0"
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 22,
+				"ToPort" : 22,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]}
+			},{
+				"IpProtocol" : "tcp",
+				"FromPort" : 3389,
+				"ToPort" : 3389,
+				"CidrIp" : { "Fn::FindInMap" : [ "IpAddressesForEnv", "ServicesVPC", "ServicesVPCCidr"]}
+			}]
+		},
+		"DependsOn" : "PoCVPC"
+	},
+	"ServicesServerSecurityGroupRule" : {
+		"Type": "AWS::EC2::SecurityGroupEgress",
+		"Properties" : {
+			"IpProtocol" : "tcp",
+			"FromPort" : 443,
+			"ToPort" : 443,
+			"DestinationSecurityGroupId" : { 
+				"Fn::GetAtt" : [ "ServicesEndpointSecurityGroup", "GroupId" ]
+			},
+			"GroupId" : {
+				"Fn::GetAtt" : [ "ServicesServerSecurityGroup", "GroupId" ]
+			}
+		},
+		"DependsOn" : [ "ServicesEndpointSecurityGroup" , "ServicesServerSecurityGroup" ]
+	},
+	"ServicesEndpointSecurityGroup" : {
+		"Type" : "AWS::EC2::SecurityGroup",
+		"Properties" : {
+			"GroupName" : "Endpoint Security Group for the Services VPC",
+			"GroupDescription" : "Allows access from the Services Servers to the SSM services",
+			"VpcId" : { "Ref" : "ServicesVPC" },
+			"SecurityGroupIngress" : [{
+				"IpProtocol" : "tcp",
+				"FromPort" : 443,
+				"ToPort" : 443,
+				"SourceSecurityGroupId" : { "Ref" : "ServicesServerSecurityGroup" }
+			} ]
+		},
+		"DependsOn" : "PoCVPC"
+	},
+	"ServicesSsmEndpoint" : {
+		"Type" : "AWS::EC2::VPCEndpoint",
+		"Properties" : {
+			"VpcId" : { "Ref" : "ServicesVPC" },
+			"SecurityGroupIds" : [ { "Ref" : "ServicesEndpointSecurityGroup" } ],
+			"ServiceName" : { "Fn::Sub": "com.amazonaws.${AWS::Region}.ssm" },
+			"SubnetIds" : [
+				{ "Ref" : "ServicesSubnetAZ1" },
+				{ "Ref" : "ServicesSubnetAZ2" }
+			],
+			"PrivateDnsEnabled" : "True",
+			"VpcEndpointType" : "Interface"
+		},
+		"DependsOn" : [ "ServicesVPC" , "ServicesPrivateRouteTable" , "ServicesEndpointSecurityGroup" ]
+	},
+	"ServicesSsmMessagesEndpoint" : {
+		"Type" : "AWS::EC2::VPCEndpoint",
+		"Properties" : {
+			"VpcId" : { "Ref" : "ServicesVPC" },
+			"SecurityGroupIds" : [ { "Ref" : "ServicesEndpointSecurityGroup" } ],
+			"ServiceName" : { "Fn::Sub": "com.amazonaws.${AWS::Region}.ssmmessages" },
+			"SubnetIds" : [
+				{ "Ref" : "ServicesSubnetAZ1" },
+				{ "Ref" : "ServicesSubnetAZ2" }
+			],
+			"PrivateDnsEnabled" : "True",
+			"VpcEndpointType" : "Interface"
+		},
+		"DependsOn" : [ "ServicesVPC" , "ServicesPrivateRouteTable" , "ServicesEndpointSecurityGroup" ]
+	},
+	"ServicesEc2Endpoint" : {
+		"Type" : "AWS::EC2::VPCEndpoint",
+		"Properties" : {
+			"VpcId" : { "Ref" : "ServicesVPC" },
+			"SecurityGroupIds" : [ { "Ref" : "ServicesEndpointSecurityGroup" } ],
+			"ServiceName" : { "Fn::Sub": "com.amazonaws.${AWS::Region}.ec2" },
+			"SubnetIds" : [
+				{ "Ref" : "ServicesSubnetAZ1" },
+				{ "Ref" : "ServicesSubnetAZ2" }
+			],
+			"PrivateDnsEnabled" : "True",
+			"VpcEndpointType" : "Interface"
+		},
+		"DependsOn" : [ "ServicesVPC" , "ServicesPrivateRouteTable" , "ServicesEndpointSecurityGroup" ]
+	},
+	"ServicesEc2MessagesEndpoint" : {
+		"Type" : "AWS::EC2::VPCEndpoint",
+		"Properties" : {
+			"VpcId" : { "Ref" : "ServicesVPC" },
+			"SecurityGroupIds" : [ { "Ref" : "ServicesEndpointSecurityGroup" } ],
+			"ServiceName" : { "Fn::Sub": "com.amazonaws.${AWS::Region}.ec2messages" },
+			"SubnetIds" : [
+				{ "Ref" : "ServicesSubnetAZ1" },
+				{ "Ref" : "ServicesSubnetAZ2" }
+			],
+			"PrivateDnsEnabled" : "True",
+			"VpcEndpointType" : "Interface"
+		},
+		"DependsOn" : [ "ServicesVPC" , "ServicesPrivateRouteTable" , "ServicesEndpointSecurityGroup" ]
+	},
+	"ServicesS3Endpoint" : {
+		"Type" : "AWS::EC2::VPCEndpoint",
+		"Properties" : {
+			"VpcId" : { "Ref" : "ServicesVPC" },
+			"RouteTableIds" : [ { "Ref" : "ServicesPrivateRouteTable" } ],
+			"ServiceName" : { "Fn::Sub": "com.amazonaws.${AWS::Region}.s3" },
+			"VpcEndpointType" : "Gateway"
+		},
+		"DependsOn" : [ "ServicesVPC" , "ServicesPrivateRouteTable" ]
+	},
+	"SharedServerConnectivityRole" : {
+		"Type" : "AWS::IAM::Role",
+		"Properties" : {		
+			"AssumeRolePolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                  "Effect": "Allow",
+                  "Principal": {
+                     "Service": [ "ec2.amazonaws.com" ]
+                  },
+                  "Action": [ "sts:AssumeRole" ]
+               } ]
+            },
+			"RoleName" : "SharedServerConnectivityRole"
+		}
+	},
+	"SharedServerConnectivityProfile" : {
+		"Type": "AWS::IAM::InstanceProfile",
+		"Properties": {
+			"Roles" : [ { "Ref" : "SharedServerConnectivityRole" } ],
+			"InstanceProfileName" : "SharedServerConnectivityProfile"
+		},
+		"DependsOn" : "SharedServerConnectivityRole"
+	},
+	"SharedServerConnectivityPolicy" : {
+		"Type" : "AWS::IAM::Policy",
+		"Properties" : {
+			"Roles" : [ { "Ref" : "SharedServerConnectivityRole" } ],
+			"PolicyName" : "SharedServerConnectivityPolicy",
+			"PolicyDocument" : {
+				"Version" : "2012-10-17",
+				"Statement": [
+					{
+						"Effect": "Allow",
+						"Action": [
+							"ssm:UpdateInstanceInformation",
+							"ssmmessages:CreateControlChannel",
+							"ssmmessages:CreateDataChannel",
+							"ssmmessages:OpenControlChannel",
+							"ssmmessages:OpenDataChannel"
+						],
+						"Resource": "*"
+					},
+					{
+						"Effect": "Allow",
+						"Action": [
+							"s3:GetEncryptionConfiguration"
+						],
+						"Resource": "*"
+					}
+				]
+			}		
+		},
+		"DependsOn" : "SharedServerConnectivityRole"
+	},
+	"WebAppServerAZ1": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "WebAppWebServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "WebAppWebSubnetAZ1" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install",
+					"sudo yum install httpd -y",
+					"sudo systemctl start httpd",
+					"sudo systemctl restart rsyslog"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "Web Server for AZ1" } ]
+		},
+		"DependsOn" : [ "WebAppWebServerSecurityGroup" , "WebAppWebSubnetAZ1" , "SharedServerConnectivityProfile"]
+	},
+	"WebAppServerAZ2": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "WebAppWebServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "WebAppWebSubnetAZ2" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install",
+					"sudo yum install httpd -y",
+					"sudo systemctl start httpd",
+					"sudo systemctl restart rsyslog"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "Web Server for AZ2" } ]
+		},
+		"DependsOn" : [ "WebAppWebServerSecurityGroup" , "WebAppWebSubnetAZ2" , "SharedServerConnectivityProfile"]
+	},
+	"DbServerAZ1": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "WebAppDbServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "WebAppDbSubnetAZ1" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install",
+					"wget https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm",
+					"sudo yum install mysql80-community-release-el7-1.noarch.rpm -y",
+					"sudo yum install mysql-community-server -y",
+					"sudo service mysqld start",
+					"sudo systemctl restart rsyslog"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "Database Server for AZ1" } ]
+		},
+		"DependsOn" : [ "WebAppDbServerSecurityGroup" , "WebAppDbSubnetAZ1" , "SharedServerConnectivityProfile"]
+	},
+	"DbServerAZ2": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "WebAppDbServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "WebAppDbSubnetAZ2" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install",
+					"wget https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm",
+					"sudo yum install mysql80-community-release-el7-1.noarch.rpm -y",
+					"sudo yum install mysql-community-server -y",
+					"sudo service mysqld start",
+					"sudo systemctl restart rsyslog"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "Database Server for AZ2" } ]
+		},
+		"DependsOn" : [ "WebAppDbServerSecurityGroup" , "WebAppDbSubnetAZ2" , "SharedServerConnectivityProfile"]
+	},
+	"ServicesAZ1": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "ServicesServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "ServicesSubnetAZ1" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "Services Server for AZ1" } ]
+		},
+		"DependsOn" : [ "ServicesServerSecurityGroup" , "ServicesSubnetAZ1" , "SharedServerConnectivityProfile"]
+	},
+	"ServicesAZ2": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "ServicesServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "ServicesSubnetAZ2" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "Services Server for AZ2" } ]
+		},
+		"DependsOn" : [ "ServicesServerSecurityGroup" , "ServicesSubnetAZ2" , "SharedServerConnectivityProfile"]
+	},
+	"PoCServerAZ1": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "PoCServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "PoCPublicSubnetAZ1" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install",
+					"sudo yum install httpd -y",
+					"sudo systemctl start httpd",
+					"wget https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm",
+					"sudo yum install mysql80-community-release-el7-1.noarch.rpm -y",
+					"sudo yum install mysql-community-server -y",
+					"sudo service mysqld start",
+					"sudo systemctl restart rsyslog"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "PoC Web Server for AZ1" } ]
+		},
+		"DependsOn" : [ "PoCServerSecurityGroup" , "PoCPublicSubnetAZ1" , "SharedServerConnectivityProfile"]
+	},
+	"PoCServerAZ2": {
+		"Type": "AWS::EC2::Instance",		
+		"Properties": {
+			"InstanceType": "t2.micro",
+			"KeyName": { "Ref" : "PassedKeyName" },
+			"ImageId": { "Ref" : "LatestLinuxAmiId" },
+			"IamInstanceProfile" : { "Ref" : "SharedServerConnectivityProfile" },
+			"NetworkInterfaces": [
+				{
+					"DeviceIndex": 0,
+					"GroupSet": [
+						{ "Ref" : "PoCServerSecurityGroup" }
+					],
+					"SubnetId": { "Ref": "PoCPublicSubnetAZ2" }
+				}
+			],
+			"UserData": {
+				"Fn::Base64" : { "Fn::Join" : ["\n", [
+					"#!/bin/bash -xe",
+					"sudo yum update -y",
+					"wget https://inspector-agent.amazonaws.com/linux/latest/install",
+					"sudo bash install",
+					"sudo yum install httpd -y",
+					"sudo systemctl start httpd",
+					"wget https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm",
+					"sudo yum install mysql80-community-release-el7-1.noarch.rpm -y",
+					"sudo yum install mysql-community-server -y",
+					"sudo service mysqld start",
+					"sudo systemctl restart rsyslog"
+					]]
+				}
+			},
+			"Tags" : [ { "Key" : "Name", "Value" : "PoC Web Server for AZ2" } ]
+		},
+		"DependsOn" : [ "PoCServerSecurityGroup" , "PoCPublicSubnetAZ2" , "SharedServerConnectivityProfile"]
+	},
+	"WebAppLoadBalancer" : {
+		"Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+		"Properties" : {
+			"Name" : "WebAppLoadBalancer",
+			"SecurityGroups" : [ { "Ref" : "WebAppLoadBalancerSecurityGroup" } ],
+			"Subnets" : [{ "Ref" : "WebAppPublicSubnetAZ1" }, { "Ref" : "WebAppPublicSubnetAZ2" } ]
+		},
+		"DependsOn" : [ "WebAppPublicSubnetAZ1" , "WebAppPublicSubnetAZ2", "WebAppLoadBalancerSecurityGroup" ]
+	},
+	"WebAppLoadBalancerTarget" : {
+		"Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+		"Properties" : {
+			"HealthCheckIntervalSeconds" : 60,
+			"HealthCheckPort" : 80,
+			"Name" : "WebServerTargetGroup",
+			"Port": 80,
+			"Protocol" : "HTTP",
+			"Targets" : [
+				{ "Id" : { "Ref" : "WebAppServerAZ1" } },
+				{ "Id" : { "Ref" : "WebAppServerAZ2" } }
+			],
+			"VpcId": { "Ref" : "WebAppVPC" }			
+		},
+		"DependsOn" : [ "WebAppServerAZ1", "WebAppServerAZ2" ]
+	},
+	"WebAppLoadBalancerListener" : {
+		"Type" : "AWS::ElasticLoadBalancingV2::Listener",
+		"Properties" : {
+			"DefaultActions" : [ {
+				"TargetGroupArn" : { "Ref" : "WebAppLoadBalancerTarget" },
+				"Type" : "forward"
+			} ],
+			"LoadBalancerArn" : { "Ref" : "WebAppLoadBalancer" },
+			"Port" : 80,
+			"Protocol" : "HTTP"
+		},
+		"DependsOn" : [ "WebAppLoadBalancer" , "WebAppLoadBalancerTarget" ]
+	}
+   },
+   "Outputs" : {
+	"LoadBalancerFullDNS" : {
+		"Description" : "DNS Name of the Load Balancer for the WebApp Web Server",
+		"Value" : { "Fn::GetAtt" : [ "WebAppLoadBalancer", "DNSName" ] },
+		"Export" : {
+			"Name" : { "Fn::Sub" : "${AWS::StackName}-LbDns" }
+		}
+	},
+	"PoCWebServer1PublicDNS" : {
+		"Description" : "Public DNS Name of the PoC Server in AZ1",
+		"Value" : { "Fn::GetAtt" : [ "PoCServerAZ1", "PublicDnsName" ] }
+	},
+	"PoCWebServer2PublicDNS" : {
+		"Description" : "Public DNS Name of the PoC Server in AZ2",
+		"Value" : { "Fn::GetAtt" : [ "PoCServerAZ2", "PublicDnsName" ] }
+	}
+   }
+}
