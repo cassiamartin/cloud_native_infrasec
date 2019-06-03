@@ -16,17 +16,17 @@ For ease of experience, here are the general steps you will take. I want you to 
 1.  We will need an EC2 Key Pair to build this stack.
 2.  Under **Services** go to **EC2**.
 3.  Select **Key Pairs** on the left.
-4.  **Create a Key Pair**. Name the Key Pair **SEC380DemoKP** and save the file to your desktop.
+4.  **Create a Key Pair**. Name the Key Pair **FND203DemoKP** and save the file to your desktop.
     1.  <u>We will not need the file, but a Key Pair must exist</u>
 5.  Now under **Services** open **CloudFormation**
 6.  Click “**Create Stack**”
-7.  Choose an **existing file in S3**: [https://s3.amazonaws.com/mikewas.net/reinvent/2018/SEC380/InfraSecBuilderSessionEnvBuild.json](https://s3.amazonaws.com/mikewas.net/reinvent/2018/SEC380/InfraSecBuilderSessionEnvBuild.json)
+7.  Choose an **existing file in S3**: [InfraSecBuilderSessionEnvBuild.json]
 8.  Fill out the screen as follows:
-    1.  Stack Name: **SEC380-Demo-Stack**
+    1.  Stack Name: **FND203-Demo-Stack**
     2.  Availability Zone 1: **Pick any availability zone**
     3.  Availability Zone 2: **Pick any availability zone except the first one you picked**
     4.  LatestLinuxAmiID: **Leave as default.**
-    5.  PassedKeyName: **SEC380DemoKP**
+    5.  PassedKeyName: **FND203DemoKP**
 9.  Click “Next”
 10.  Click “Next” on the following screen.
 11.  Acknowledge the CloudFormation Template creates a user by checking the box.
@@ -46,7 +46,7 @@ Now we’ve setup the environment I showed you on the slide. We can now move for
 3.  We want to **Create trail** in order to make sure we are capturing what exactly?
 4.  Let’s set a **Trail Name** of “**All API Commands across all Regions**”. Then let’s **Apply trail to all regions** with a single click.
 5.  Seeing **All Read/Write events** would show us every API call made to our AWS environment moving forward.
-6.  We should save these for further evaluation, so you would want to **Create a new S3 bucket** and call it “**sec380-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
+6.  We should save these for further evaluation, so you would want to **Create a new S3 bucket** and call it “**fdn203-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
 7.  Let’s **Create** that trail. We can come back to look at it later.
 
 Monitoring what API calls are made is great, but it’s difficult to convert that into something like Change Management for all infrastructure in the cloud. Is there a service to help there?
@@ -213,10 +213,10 @@ There’s still a risk of open administrative ports though right? Whether open t
 There’s a way to log all commands sent to the instance as well. But first you have to create S3 buckets and CloudWatch Logs
 
 1.  Go to **S3**.
-2.  **Create a Bucket** called **sec380-ssmlogs-bucket-{myname}**. Before you move on, turn on **Default Encryption** using **AWS-KMS** and the **aws/s3**
+2.  **Create a Bucket** called **fdn203-ssmlogs-bucket-{myname}**. Before you move on, turn on **Default Encryption** using **AWS-KMS** and the **aws/s3**
 3.  Then **Grant Amazon S3 Log Delivery group write access to the bucket**.
 4.  Go to **CloudWatch**.
-5.  In **Logs** you must **Create log group**, called **sec380-ssmlogs-logs**.
+5.  In **Logs** you must **Create log group**, called **fnd203-ssmlogs-logs**.
 6.  Go to **IAM**.
 7.  We will modify the **Role** called
 8.  Expand the Inline Policy and click **Edit Policy**
@@ -237,8 +237,8 @@ _<u>This can be more restrictive in a production environment.</u>_
 
 1.  Now go back to **Systems Manager**, **Session Manager**.
 2.  Let’s use **Preferences** to set up logging.
-3.  **Edit** the settings to **Write session output** and choose the bucket called “**sec380-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
-4.  Let’s also send the output to **Cloudwatch logs**, we can deselect **Encrypt Log Data**, and create a log group name “**sec380-demo-bucket-{myname}**”.
+3.  **Edit** the settings to **Write session output** and choose the bucket called “**fdn203-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
+4.  Let’s also send the output to **Cloudwatch logs**, we can deselect **Encrypt Log Data**, and create a log group name “**fdn203-demo-bucket-{myname}**”.
     1.  In production I would not recommend storing unencrypted logs.
 5.  **Save** that configuration.
 6.  Now back at **Sessions**, you can **Start a session** with any server with the SSM agent and access to the SSM Service.
@@ -253,8 +253,8 @@ Let’s go back to the presentation.
 
 **<u>Clean up:</u>**
 
-1.  **Empty** and **Delete** your **sec380-demo-bucket-{myname}** bucket
-2.  **Empty** and **Delete** your **sec380-ssmlogs-bucket-{myname}** bucket
+1.  **Empty** and **Delete** your **fdn203-demo-bucket-{myname}** bucket
+2.  **Empty** and **Delete** your **fdn203-ssmlogs-bucket-{myname}** bucket
     1.  If you got this far
 3.  Turn off **Config**
 4.  Empty and Delete your **Config Bucket**
