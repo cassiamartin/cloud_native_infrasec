@@ -1,4 +1,4 @@
-## re:Invent 2018 SEC380 - Mitigate Risks Using Cloud-Native Infrastructure Security
+## re:Inforce 2019 FND203 - Mitigate Risks Using Cloud-Native Infrastructure Security
 
 Here are the steps you’ll perform as part of this Builders Session:
 
