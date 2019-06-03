@@ -20,7 +20,7 @@ For ease of experience, here are the general steps you will take. I want you to 
     1.  <u>We will not need the file, but a Key Pair must exist</u>
 5.  Now under **Services** open **CloudFormation**
 6.  Click “**Create Stack**”
-7.  Choose an **existing file in S3**: [InfraSecBuilderSessionEnvBuild.json]
+7.  Choose an **existing file in S3**: [InfraSecBuilderSessionEnvBuild.json](InfraSecBuilderSessionEnvBuild.json)
 8.  Fill out the screen as follows:
     1.  Stack Name: **FND203-Demo-Stack**
     2.  Availability Zone 1: **Pick any availability zone**
