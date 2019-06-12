@@ -58,29 +58,29 @@ In doing this, you’ve reduce the scope of internal traffic communication from 
 4.    I would add an **Outbound Rule** by **Editing Outbound Rules**
 5.    **Adding Rules** like
         > Rule #: **50**
-        * Of type **All Traffic**
-        * To the Destination **10.0.2.0/24**
-        * And a **Deny** Behavior
+        > Of type **All Traffic**
+        > To the Destination **10.0.2.0/24**
+        > And a **Deny** Behavior
 
         and
-        > * Rule #: **60**
-        * Of type **All Traffic**
-        * To the Destination **10.0.130.0/24**
-        * And a **Deny** Behavior
+        > Rule #: **60**
+        > Of type **All Traffic**
+        > To the Destination **10.0.130.0/24**
+        > And a **Deny** Behavior
 
        and
-        > * Rule #: **100**
-        * Of type **All Traffic**
-        * To the Destination **10.0.0.0/8**
-        * And an **Allow** Behavior
+        > Rule #: **100**
+        > Of type **All Traffic**
+        > To the Destination **10.0.0.0/8**
+        > And an **Allow** Behavior
 
         Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
 
 6.    After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule is necessary. **Add a Rule**
-        > *    Rule #: **100**
-        *    Of type **All Traffic**
-        *    To the Destination **0.0.0.0/0**
-        *    And a **Allow** Behavior
+        >   Rule #: **100**
+        >   Of type **All Traffic**
+        >   To the Destination **0.0.0.0/0**
+        >   And a **Allow** Behavior
 2.    After **Saving** you would then use **Subnet Associations** to **Edit Subnet Associations**.
 3.    Here you would Associate with the **Web App Public Subnet in AZ1** and **Web App Public Subnet in AZ2** subnets by clicking **Edit**.
 
