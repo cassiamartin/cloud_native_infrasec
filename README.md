@@ -160,9 +160,7 @@ How would you do this on-premises?
 Now you’ve seen that GuardDuty is monitoring logs on your behalf, and without you having to pay for storage, the AI/ML or Threat feeds, and the man hours to do the analysis. This is all happening at Cloud scale too, no longer do you need to have terabytes of logs that are never touched.
 
 ## Reducing the risk of Admin access and administrative ports
-
-There’s still a risk of open administrative ports though right? Whether open to the internet or open internally for malware to find it’s a risk. Except it doesn’t have to be.
-
+There’s still a risk of open administrative ports, right? It's a bigger risk if those ports are open to the internet and a smaller risk if open internally for malware to find. Can we find a way around this requirement?
 1.  Let’s go back to **VPC** and **Security Groups**.
 2.  Open the **Services Server Security Group** and the **Inbound Rules**.
 3.  Now, despite the fact that those are made up IP’s, you are going to **Edit Rules** and delete all the rules (Click the x on the right). Then **Save** and **Close**.
