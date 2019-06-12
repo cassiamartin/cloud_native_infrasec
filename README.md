@@ -18,8 +18,6 @@ Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you do
 For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we we will not specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
 ## Enable granular logging to see everything in your AWS environment
-1. Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
-2.    Picking a Security Group like the **Services Server Security Group** we can see the more traditional way of doing things.
 1.    Go to the **CloudTrail** service in the console
 2.    Click on Getting Started if you haven’t seen this before
 3.    We want to **Create trail** in order to make sure we are capturing what exactly?
@@ -59,19 +57,19 @@ In doing this, you’ve reduce the scope of internal traffic communication from 
 3.    I would Name it “**LoadBalancerIsolation**” and put it in the **Web Application VPC**.
 4.    I would add an **Outbound Rule** by **Editing Outbound Rules**
 5.    **Adding Rules** like
-        * Rule #: **50**
+        > Rule #: **50**
         * Of type **All Traffic**
         * To the Destination **10.0.2.0/24**
         * And a **Deny** Behavior
 
-             And
-        * Rule #: **60**
+        and
+        > * Rule #: **60**
         * Of type **All Traffic**
         * To the Destination **10.0.130.0/24**
         * And a **Deny** Behavior
 
-             And
-        * Rule #: **100**
+       and
+        > * Rule #: **100**
         * Of type **All Traffic**
         * To the Destination **10.0.0.0/8**
         * And an **Allow** Behavior
@@ -79,7 +77,7 @@ In doing this, you’ve reduce the scope of internal traffic communication from 
         Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
 
 6.    After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule is necessary. **Add a Rule**
-        *    Rule #: **100**
+        > *    Rule #: **100**
         *    Of type **All Traffic**
         *    To the Destination **0.0.0.0/0**
         *    And a **Allow** Behavior
