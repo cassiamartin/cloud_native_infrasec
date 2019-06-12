@@ -121,20 +121,17 @@ In doing this, you’ve reduce the scope of internal traffic communication from 
 Now, even within the same workload or application you are protecting servers from each other where putting Firewalls in the past would have been impossible.
 
 ## Logging actions in your environment and making it easy to see what’s changed
-
 1.  We just made a bunch of changes, and on-premises it may be difficult to track them. Let’s check the **CloudTrail** in **Services** to see what it noticed.
 2.  The Dashboard shows us some recent events, but we want to see the complete **Event History**.
 3.  Here we can see your **User Name** performing actions tracked by **Event name** against different **Resource Names**. API commands not related to Data (because we chose that earlier) are being captured by CloudTrail.
 4.  You can remove the system calls by using a **Filter** on **User name** and putting your **Username** in the text box and hitting enter. Now **Scroll down**. Do you see all the ACL’s you changed?
-
     But again, seeing these API calls doesn’t give you a good visual of the changes occurring.
-
 5.  Lets go to **Config**.
 6.  I can see all of my resources, including some called **EC2 NetworkAcl**.
 3.  Clicking there gives you a list of ACL’s, and you can **click** on the first one.
 4.  Seeing details on that ACL, you can also see a visual **Configuration Timeline**
 5.  In the configuration timeline, you can see the changes that occurred over the past few minutes.
-      *  If you don’t see any changes go back and choose a different ACL
+       *  If you don’t see any changes go back and choose a different ACL
 6.  If you expand **Changes** you can see exactly what changes you made to the resource, including what you applied it to as a **Relationship Change**.
 
 How would you do this on-premises?
@@ -142,20 +139,19 @@ How would you do this on-premises?
 ## Logging and monitoring of the network for bad behavior is important too
 
 1.  Let’s go back to **GuardDuty** and see what findings we may have.
-
     If this is a new or infrequently used account, you may have no Findings. If you do have Findings and this is not a new account, we can walk through those separately.
 
 2.  Since this is a good design and relatively new, let’s create some demonstration findings in **Settings**
-2.  After we **Generate sample findings** we can go back to the **Findings**
-3.  17 High Severity Findings, 30 Medium Severity Findings, and 7 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] [SAMPLE] Trojan:EC2/PhishingDomainRequest!DNS**.
-4.  You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the **Action Type** help?
-      *  Ask me about the 3 data sources GuardDuty uses if you don’t already know.
-5.  **Scrolling down** the Findings list again you see another high severity **[SAMPLE] Backdoor:EC2/DenialOfService.UdpOnTcpPorts**.
-6.  Here you see a lot of the same type of information. But why is this **Action Type** different?
+3.  After we **Generate sample findings** we can go back to the **Findings**
+4.  17 High Severity Findings, 30 Medium Severity Findings, and 7 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] [SAMPLE] Trojan:EC2/PhishingDomainRequest!DNS**.
+5.  You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the **Action Type** help?
+       *  Ask me about the 3 data sources GuardDuty uses if you don’t already know.
+6.  **Scrolling down** the Findings list again you see another high severity **[SAMPLE] Backdoor:EC2/DenialOfService.UdpOnTcpPorts**.
+7.  Here you see a lot of the same type of information. But why is this **Action Type** different?
       *  If we didn’t turn on those logs how did it see the traffic?
-7.  **Scrolling down** the Findings list a bit more you find **[SAMPLE] UnauthorizedAccess:IAMUser/TorIPCaller**.
-8.  This one not only has a different **Action Type** but also starts with **IAMUser** instead of **EC2**. Why does that matter?
-      *  Is this a different data source?
+8.  **Scrolling down** the Findings list a bit more you find **[SAMPLE] UnauthorizedAccess:IAMUser/TorIPCaller**.
+9.  This one not only has a different **Action Type** but also starts with **IAMUser** instead of **EC2**. Why does that matter?
+    *  Is this a different data source?
 
 Now you’ve seen that GuardDuty is monitoring logs on your behalf, and without you having to pay for storage, the AI/ML or Threat feeds, and the man hours to do the analysis. This is all happening at Cloud scale too, no longer do you need to have terabytes of logs that are never touched.
 
