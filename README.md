@@ -2,7 +2,9 @@
 
 Here are the steps you’ll perform as part of this Builders Session:
 
-1.  [Enable detailed, holistic logging and network-based security monitoring](#Enable granular logging to see everything in your AWS environment)
+
+
+1.  [Enable detailed, holistic logging and network-based security monitoring](#enable-granular-logging-to-see-everything-in-your-aws-environment)
 2.  [Review and improve upon granular control of communication between workloads in the cloud](#Granular, Provable Control of Communications)
 3.  [Improve upon granular network-based controls protection side-to-side movement](#When Security includes explicitly denying network access)
 4.  [Evaluate detailed logging capabilities](#Logging actions in your environment and making it easy to see what’s changed)
@@ -56,9 +58,9 @@ Now we’ve setup the environment I showed you on the slide. We can now move for
 3.  We would want to store this data in a central bucket as well. Let’s **Create a new bucket** and use the default to ensure its unique (Note: We could use the bucket we just created, but you would have to add permissions, which would take more time).
 4.  AWS does a good job of clearly defining roles, so let’s allow AWS to **Create AWS Config service-linked role**
 5.  **Next**, we can choose rules we want to test against, but we can do that later too if we **Skip** it for now.
-6.  **Confirm**ing these choices will enable Config to monitor all changes to our environment. And we’ll see that in a bit.
+6.  **Confirm** these choices to enable Config to monitor all changes to our environment. And we’ll see that in a bit.
 
-  Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.
+    Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.
 
 1.  Using a **Service** like **GuardDuty** you can monitor logs in near-real-time for security anomalies.
 2.  After **Getting Started** we can quickly enable this service with just one click. It’s that easy. What is GuardDuty monitoring, we’ll check that out later.
