@@ -18,6 +18,8 @@ Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you do
 For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we we will not specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
 ## Enable granular logging to see everything in your AWS environment
+1. Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
+2.    Picking a Security Group like the **Services Server Security Group** we can see the more traditional way of doing things.
 1.    Go to the **CloudTrail** service in the console
 2.    Click on Getting Started if you haven’t seen this before
 3.    We want to **Create trail** in order to make sure we are capturing what exactly?
@@ -35,8 +37,7 @@ For ease of experience, many of the steps in this lab are written in general ste
 6.    **Confirm** these choices to enable Config to monitor all changes to our environment. And we’ll see that in a bit.
 
         Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.
-
-1.    Using a **Service** like **GuardDuty** you can monitor logs in near-real-time for security anomalies.
+7.    Using a **Service** like **GuardDuty** you can monitor logs in near-real-time for security anomalies.
 2.    After **Getting Started** we can quickly enable this service with just one click. It’s that easy. What is GuardDuty monitoring, we’ll check that out later.
 
 When we looked at our on-premises environment we identified that disjointed security tooling, lack of insight into what’s going on in the environment, and difficulty managing change control and permissions in the environment all led to risks becoming problems pretty fast. With the services we just enabled, we’ll see how we now have complete insight into who’s doing what in the environment, what changes are being made, and if and when problems start to arise.
