@@ -15,7 +15,7 @@ If you complete all six steps with time to spare, there is [Extra Credit](./extr
 
 Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you don't have any continuing charges.
 
-For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we we will not specify each necessary click to accomplish a task, so we've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
+For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we we will not specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
 ## Enable granular logging to see everything in your AWS environment
 1.    Go to the **CloudTrail** service in the console
@@ -27,8 +27,7 @@ For ease of experience, many of the steps in this lab are written in general ste
 7.    Let’s **Create** that trail. We can come back to look at it later.
 
         Monitoring what API calls are made is great, but it’s difficult to convert that into something like Change Management for all infrastructure in the cloud. Is there a service to help there?
-
-1.    **Services** called **Config** would be worth looking into.
+8.    **Services** called **Config** would be worth looking into.
 2.    After **Getting Started** we can start tracking All resources, Including Global Resources
 3.    We would want to store this data in a central bucket as well. Let’s **Create a new bucket** and use the default to ensure its unique (Note: We could use the bucket we just created, but you would have to add permissions, which would take more time).
 4.    AWS does a good job of clearly defining roles, so let’s allow AWS to **Create AWS Config service-linked role**
