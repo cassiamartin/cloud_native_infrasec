@@ -163,11 +163,11 @@ There’s still a risk of open administrative ports, right? It's a bigger risk i
 6.    At **Sessions**, you can **Start a session** with any server with the SSM agent and access to the SSM Service.
 7.    We disabled all access to the **Services Server for AZ1**, yet there it is. Let’s select it and **Start session**.
 8.    Is this a console? For the AWS server? Let’s find out.
-    *    Type: curl http://169.254.169.254/latest/meta-data/instance-id
+      *    Type: curl http://169.254.169.254/latest/meta-data/instance-id
         *   Does that instance ID look familiar?
-    *    Try: curl http://169.254.169.254/latest/meta-data/security-groups
-        *  That looks like the Security Group we modified doesn’t it?
-    *    Let’s try: Ping 8.8.8.8
-        *  Should it work?
-    *    Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
-        *  Sure looks like an AWS server.
+      *    Try: curl http://169.254.169.254/latest/meta-data/security-groups
+          *  That looks like the Security Group we modified doesn’t it?
+      *    Let’s try: Ping 8.8.8.8
+          *  Should it work?
+      *    Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
+          *  Sure looks like an AWS server.
