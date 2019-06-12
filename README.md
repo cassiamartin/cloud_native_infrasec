@@ -1,6 +1,6 @@
 # re:Inforce 2019 FND203 - Mitigate Risks Using Cloud-Native Infrastructure Security
 
-First you'll want to [setup](./setup.md) your environment for this lab by running CloudFormation.
+First you'll want to [Set up](./setup.md) your environment for this lab by running CloudFormation.
 
 Next, here are the steps you’ll perform as part of this Builders Session:
 
@@ -18,7 +18,6 @@ Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you do
 For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we we will not specify each necessary click to accomplish a task, so we've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
 ## Enable granular logging to see everything in your AWS environment
-
 1.  Go to the **CloudTrail** service in the console
 2.  Click on Getting Started if you haven’t seen this before
 3.  We want to **Create trail** in order to make sure we are capturing what exactly?
@@ -44,7 +43,6 @@ For ease of experience, many of the steps in this lab are written in general ste
 When we looked at our on-premises environment we identified that disjointed security tooling, lack of insight into what’s going on in the environment, and difficulty managing change control and permissions in the environment all led to risks becoming problems pretty fast. With the services we just enabled, we’ll see how we now have complete insight into who’s doing what in the environment, what changes are being made, and if and when problems start to arise.
 
 ## Granular, Provable Control of Communications
-
 1. Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
 2.  Picking a Security Group like the **Services Server Security Group** we can see the more traditional way of doing things.
 3.  Checking the **Outbound** rules, we see the servers can talk to a range of IP’s, 65,536 to be precise. But there are only maybe 6-8 servers that they actually need to talk to.
@@ -56,28 +54,27 @@ When we looked at our on-premises environment we identified that disjointed secu
 In doing this, you’ve reduce the scope of internal traffic communication from 65,636 host down to 8\. Additionally, if you ever need to stand up more servers in these groups, they would be automatically accessible without intervention, as long as you put them in the same Security Group. On premise, you would either need to have Firewalls between all internal VLAN’s, Routers, and sites or complex Network ACL’s on every switch in your environment. This reduces the risk of threats, the risk of misconfiguration, and the operational burden all at once.
 
 ## When Security includes explicitly denying network access
-
 1.  Security Groups are awesome at allowing access, but in **VPC** Services, **Network ACLs** are great at explicitly blocking them.
 2.  For instance, if you wanted to make sure you explicitly blocked the Load Balancer in my WebApp from talking to my Database servers, you could **Create a network ACL**.
 3.  I would Name it “**LoadBalancerIsolation**” and put it in the **Web Application VPC**.
 4.  I would add an **Outbound Rule** by **Editing Outbound Rules**
 5.  **Adding Rules** like
     * Rule #: **50**
-    *  Of type **All Traffic**
-    *  To the Destination **10.0.2.0/24**
-    *  And a **Deny** Behavior
+    * Of type **All Traffic**
+    * To the Destination **10.0.2.0/24**
+    * And a **Deny** Behavior
 
        And
-    *  Rule #: **60**
-    *  Of type **All Traffic**
-    *  To the Destination **10.0.130.0/24**
-    *  And a **Deny** Behavior
+    * Rule #: **60**
+    * Of type **All Traffic**
+    * To the Destination **10.0.130.0/24**
+    * And a **Deny** Behavior
 
        And
-    *   Rule #: **100**
-    *  Of type **All Traffic**
-    *  To the Destination **10.0.0.0/8**
-    *  And an **Allow** Behavior
+    * Rule #: **100**
+    * Of type **All Traffic**
+    * To the Destination **10.0.0.0/8**
+    * And an **Allow** Behavior
 
     Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
 
