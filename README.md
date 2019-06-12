@@ -5,11 +5,11 @@ Here are the steps you’ll perform as part of this Builders Session:
 
 
 1.  [Enable detailed, holistic logging and network-based security monitoring](#enable-granular-logging-to-see-everything-in-your-aws-environment)
-2.  [Review and improve upon granular control of communication between workloads in the cloud](#Granular, Provable Control of Communications)
-3.  [Improve upon granular network-based controls protection side-to-side movement](#When Security includes explicitly denying network access)
-4.  [Evaluate detailed logging capabilities](#Logging actions in your environment and making it easy to see what’s changed)
-5.  [Evaluate network-based protections](### Logging and monitoring of the network for bad behavior is important too)
-6.  [Further reduce administrative risks by reducing access and improving logging](#Reducing the risk of Admin access and administrative ports)
+2.  [Review and improve upon granular control of communication between workloads in the cloud](#granular-provable-control-of-communications)
+3.  [Improve upon granular network-based controls protection side-to-side movement](#when-security-includes-explicitly-denying-network-access)
+4.  [Evaluate detailed logging capabilities](#logging-actions-in-your-environment-and-making-it-easy-to-see-whats-changed)
+5.  [Evaluate network-based protections](#logging-and-monitoring-of-the-network-for-bad-behavior-is-important-too)
+6.  [Further reduce administrative risks by reducing access and improving logging](#reducing-the-risk-of-admin-access-and-administrative-ports)
 
 For ease of experience, here are the general steps you will take. I want you to learn the interface though, so these instructions are more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
@@ -88,63 +88,59 @@ In doing this, you’ve reduce the scope of internal traffic communication from 
 5.  **Adding Rules** like
     * Rule #: **50**
     *  Of type **All Traffic**
-    3.  To the Destination **10.0.2.0/24**
-    4.  And a **Deny** Behavior
-
-   And
-
+    *  To the Destination **10.0.2.0/24**
+    *  And a **Deny** Behavior
+       And
     *  Rule #: **60**
-    2.  Of type **All Traffic**
-    3.  To the Destination **10.0.130.0/24**
-    4.  And a **Deny** Behavior
+    *  Of type **All Traffic**
+    *  To the Destination **10.0.130.0/24**
+    *  And a **Deny** Behavior
+       And
+    *   Rule #: **100**
+    *  Of type **All Traffic**
+    *  To the Destination **10.0.0.0/8**
+    *  And an **Allow** Behavior
 
-   And
-   *   Rule #: **100**
-   2.  Of type **All Traffic**
-   3.  To the Destination **10.0.0.0/8**
-   4.  And an **Allow** Behavior
+    Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
 
-   Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
-
-1.  After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule is necessary. **Add a Rule**
+6.  After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule is necessary. **Add a Rule**
     *  Rule #: **100**
-    2.  Of type **All Traffic**
-    3.  To the Destination **0.0.0.0/0**
-    4.  And a **Allow** Behavior
+    *  Of type **All Traffic**
+    *  To the Destination **0.0.0.0/0**
+    *  And a **Allow** Behavior
 2.  After **Saving** you would then use **Subnet Associations** to **Edit Subnet Associations**.
 3.  Here you would Associate with the **Web App Public Subnet in AZ1** and **Web App Public Subnet in AZ2** subnets by clicking **Edit**.
 
-  Now, you’ve effectively ensured that if the Load Balancers in your environment misbehave, they can’t communicate with or compromise the Database servers directly. But there was no additional hardware firewall or complex routing required to make this simple change in the simple network topology.
+    Now, you’ve effectively ensured that if the Load Balancers in your environment misbehave, they can’t communicate with or compromise the Database servers directly. But there was no additional hardware firewall or complex routing required to make this simple change in the simple network topology.
 
-  But let’s say you want to go further. The Proof of Concept servers you built aren’t exchanging state so they don’t need to communicate to each other. This way, if one gets compromised it can’t hurt the other. Let’s build that protection.
+    But let’s say you want to go further. The Proof of Concept servers you built aren’t exchanging state so they don’t need to communicate to each other. This way, if one gets compromised it can’t hurt the other. Let’s build that protection.
 
 1.  You would **Create a network ACL**.
 2.  Name it “**PoCProtectionAZ1**” and put it in the **Proof of Concept VPC**.
 3.  Add an **Outbound Rule** by **Editing Outbound Rules**
 4.  **Add Rules**
     *  Rule #: **50**
-    2.  Of type **All Traffic**
-    3.  To the Destination **10.250.128.0/24**
-    4.  And a **Deny** Behavior
-
-   And
-   *  Rule #: **100**
-   2.  Of type **All Traffic**
-   3.  To the Destination **0.0.0.0/0**
-   4.  And an **Allow** Behavior
+    *  Of type **All Traffic**
+    *  To the Destination **10.250.128.0/24**
+    *  And a **Deny** Behavior
+       And
+    *  Rule #: **100**
+    *  Of type **All Traffic**
+    *  To the Destination **0.0.0.0/0**
+    *  And an **Allow** Behavior
 
 1.  **Save** the rules and allow access to that subnet from the internet. **Edit inbound Rules** and **Add Rule**
     *  Rule #: **100**
-    2.  Of type **All Traffic**
-    3.  To the Destination **0.0.0.0/0**
-    4.  And a **Allow** Behavior
+    *  Of type **All Traffic**
+    *  To the Destination **0.0.0.0/0**
+    *  And a **Allow** Behavior
 
 1.  After **Saving** you would then use **Subnet Associations** to **Edit Subnet Associations**.
 2.  Here you would Associate with the **Proof of Concept Public Subnet in AZ1** subnets by clicking **Edit**.
 3.  You can choose to duplicate those steps to block the other direction by setting
     *  Name to “**PoCProtectionAZ2**”
-    2.  Blocking traffic to the Destination **10.250.0.0/24**
-    3.  And Associating with **Proof of Concept Public Subnet in AZ2**
+    *  Blocking traffic to the Destination **10.250.0.0/24**
+    *  And Associating with **Proof of Concept Public Subnet in AZ2**
 
 Now, even within the same workload or application you are protecting servers from each other where putting Firewalls in the past would have been impossible.
 
@@ -177,13 +173,13 @@ How would you do this on-premises?
 2.  After we **Generate sample findings** we can go back to the **Findings**
 3.  9 High Severity Findings, 31 Medium Severity Findings, and 5 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] Backdoor:EC2/C&CActivity.B!DNS**.
 4.  You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the **Action Type** help?
-    1.  Ask me about the 3 data sources GuardDuty uses if you don’t already know.
+    *  Ask me about the 3 data sources GuardDuty uses if you don’t already know.
 5.  **Scrolling down** the Findings list again you see another high severity **[SAMPLE] Backdoor:EC2/XORDDOS**.
 6.  Here you see a lot of the same type of information. But why is this **Action Type** different?
-    1.  If we didn’t turn on those logs how did it see the traffic?
+    *  If we didn’t turn on those logs how did it see the traffic?
 7.  **Scrolling down** the Findings list a bit more you find **[SAMPLE] UnauthorizedAccess:IAMUser/UnusualASNCaller**.
 8.  This one not only has a different **Action Type** but also starts with **IAMUser** instead of **EC2**. Why does that matter?
-    1.  Is this a different data source?
+    *  Is this a different data source?
 
 Now you’ve seen that GuardDuty is monitoring logs on your behalf, and without you having to pay for storage, the AI/ML or Threat feeds, and the man hours to do the analysis. This is all happening at Cloud scale too, no longer do you need to have terabytes of logs that are never touched.
 
@@ -201,11 +197,11 @@ There’s still a risk of open administrative ports though right? Whether open t
 8.  Is this a console? For the AWS server? Let’s find out.
     *  Type: curl http://169.254.169.254/latest/meta-data/instance-id
         *   Does that instance ID look familiar?
-    2.  Try: curl http://169.254.169.254/latest/meta-data/security-groups
+    *  Try: curl http://169.254.169.254/latest/meta-data/security-groups
         *   That looks like the Security Group we modified doesn’t it?
-    3.  Let’s try: Ping 8.8.8.8
+    *  Let’s try: Ping 8.8.8.8
         *  Should it work?
-    4.  Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
+    *  Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
         *  Sure looks like an AWS server.
 
 ## Extra Credit
