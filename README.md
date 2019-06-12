@@ -22,7 +22,7 @@ For ease of experience, many of the steps in this lab are written in general ste
 1.  Go to the **CloudTrail** service in the console
 2.  Click on Getting Started if you haven’t seen this before
 3.  We want to **Create trail** in order to make sure we are capturing what exactly?
-4.  Let’s set a **Trail Name** of “**All API Commands across all Regions**”. Then let’s **Apply trail to all regions** with a single click.
+4.  Let’s set a **Trail Name** of “**All-API-Commands-across-all-Regions**”. Then let’s **Apply trail to all regions** with a single click.
 5.  Seeing **All Read/Write events** would show us every API call made to our AWS environment moving forward.
 6.  We should save these for further evaluation, so you would want to **Create a new S3 bucket** and call it “**fdn203-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
 7.  Let’s **Create** that trail. We can come back to look at it later.
@@ -45,9 +45,7 @@ When we looked at our on-premises environment we identified that disjointed secu
 
 ## Granular, Provable Control of Communications
 
-1.  Go to the **CloudTrail** service in the console
-2.  Click on Getting Started if you haven’t seen this before
-1.  Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
+1. Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
 2.  Picking a Security Group like the **Services Server Security Group** we can see the more traditional way of doing things.
 3.  Checking the **Outbound** rules, we see the servers can talk to a range of IP’s, 65,536 to be precise. But there are only maybe 6-8 servers that they actually need to talk to.
 4.  Well, if we copy the **GroupID** of the **PoC Web Server Security Group** we start to reduce that number
@@ -152,13 +150,13 @@ How would you do this on-premises?
 
 2.  Since this is a good design and relatively new, let’s create some demonstration findings in **Settings**
 2.  After we **Generate sample findings** we can go back to the **Findings**
-3.  9 High Severity Findings, 31 Medium Severity Findings, and 5 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] Backdoor:EC2/C&CActivity.B!DNS**.
+3.  17 High Severity Findings, 30 Medium Severity Findings, and 7 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] [SAMPLE] Trojan:EC2/PhishingDomainRequest!DNS**.
 4.  You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the **Action Type** help?
       *  Ask me about the 3 data sources GuardDuty uses if you don’t already know.
-5.  **Scrolling down** the Findings list again you see another high severity **[SAMPLE] Backdoor:EC2/XORDDOS**.
+5.  **Scrolling down** the Findings list again you see another high severity **[SAMPLE] Backdoor:EC2/DenialOfService.UdpOnTcpPorts**.
 6.  Here you see a lot of the same type of information. But why is this **Action Type** different?
       *  If we didn’t turn on those logs how did it see the traffic?
-7.  **Scrolling down** the Findings list a bit more you find **[SAMPLE] UnauthorizedAccess:IAMUser/UnusualASNCaller**.
+7.  **Scrolling down** the Findings list a bit more you find **[SAMPLE] UnauthorizedAccess:IAMUser/TorIPCaller**.
 8.  This one not only has a different **Action Type** but also starts with **IAMUser** instead of **EC2**. Why does that matter?
       *  Is this a different data source?
 
