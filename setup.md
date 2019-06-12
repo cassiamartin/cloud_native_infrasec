@@ -7,7 +7,8 @@
     * We will not need the file, but a Key Pair must exist</u>
 5.  Now under **Services** open **CloudFormation**
 6.  Click “**Create Stack**”
-7.  Choose an **existing file in S3**: [InfraSecBuilderSessionEnvBuild.json](InfraSecBuilderSessionEnvBuild.json)
+7.  In your Github tab, right-click raw to download the [InfraSecBuilderSessionEnvBuild.json](InfraSecBuilderSessionEnvBuild.json)
+7.  In CloudFormation, choose **upload a template file**, and choose the json file you just downloaded: 
 8.  Fill out the screen as follows:
     *   Stack Name: **FND203-Demo-Stack**
     *  Availability Zone 1: **Pick any availability zone**
