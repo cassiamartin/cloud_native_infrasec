@@ -90,11 +90,13 @@ In doing this, you’ve reduce the scope of internal traffic communication from 
     *  Of type **All Traffic**
     *  To the Destination **10.0.2.0/24**
     *  And a **Deny** Behavior
+
        And
     *  Rule #: **60**
     *  Of type **All Traffic**
     *  To the Destination **10.0.130.0/24**
     *  And a **Deny** Behavior
+
        And
     *   Rule #: **100**
     *  Of type **All Traffic**
@@ -123,7 +125,8 @@ In doing this, you’ve reduce the scope of internal traffic communication from 
     *  Of type **All Traffic**
     *  To the Destination **10.250.128.0/24**
     *  And a **Deny** Behavior
-       And
+
+       and
     *  Rule #: **100**
     *  Of type **All Traffic**
     *  To the Destination **0.0.0.0/0**
@@ -153,8 +156,8 @@ Now, even within the same workload or application you are protecting servers fro
 
   But again, seeing these API calls doesn’t give you a good visual of the changes occurring.
 
-1.  Lets go to **Config**.
-2.  I can see all of my resources, including some called **EC2 NetworkAcl**.
+5.  Lets go to **Config**.
+6.  I can see all of my resources, including some called **EC2 NetworkAcl**.
 3.  Clicking there gives you a list of ACL’s, and you can **click** on the first one.
 4.  Seeing details on that ACL, you can also see a visual **Configuration Timeline**
 5.  In the configuration timeline, you can see the changes that occurred over the past few minutes.
