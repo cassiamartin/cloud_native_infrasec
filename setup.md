@@ -22,7 +22,7 @@
 14.  Click on the Stack Name
 15.  Go to the Outputs tab of the Stack
 16.  Make note of the DNS names. You can use these to validate the Web servers that should be publicly accessible are.
-    *  The LoadBalancerFullDNS, PoCWebServer1PublicDNS, and PoCWebServer2PublicDNS should all work.
+     *  The LoadBalancerFullDNS, PoCWebServer1PublicDNS, and PoCWebServer2PublicDNS should all work.
 
 Now we’ve setup the environment I showed you on the slide. We can now move forward with your hand-on portion.
 
