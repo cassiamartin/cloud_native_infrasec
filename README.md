@@ -1,8 +1,8 @@
-## re:Inforce 2019 FND203 - Mitigate Risks Using Cloud-Native Infrastructure Security
+# re:Inforce 2019 FND203 - Mitigate Risks Using Cloud-Native Infrastructure Security
 
-Here are the steps you’ll perform as part of this Builders Session:
+First you'll want to [setup](./setup.md) your environment for this lab by running CloudFormation.
 
-
+Next, here are the steps you’ll perform as part of this Builders Session:
 
 1.  [Enable detailed, holistic logging and network-based security monitoring](#enable-granular-logging-to-see-everything-in-your-aws-environment)
 2.  [Review and improve upon granular control of communication between workloads in the cloud](#granular-provable-control-of-communications)
@@ -11,35 +11,11 @@ Here are the steps you’ll perform as part of this Builders Session:
 5.  [Evaluate network-based protections](#logging-and-monitoring-of-the-network-for-bad-behavior-is-important-too)
 6.  [Further reduce administrative risks by reducing access and improving logging](#reducing-the-risk-of-admin-access-and-administrative-ports)
 
-For ease of experience, here are the general steps you will take. I want you to learn the interface though, so these instructions are more of a guide than a tutorial. Please don’t hesitate to ask questions.
+If you complete all six steps with time to spare, there is [Extra Credit](./extracredit.md) available.
 
-### Build the environment using CloudFormation
+Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you don't have any continuing charges.
 
-1.  We will need an EC2 Key Pair to build this stack.
-2.  Under **Services** go to **EC2**.
-9.  Select **Key Pairs** on the left.
-10.  **Create a Key Pair**. Name the Key Pair **FND203DemoKP** and save the file to your desktop.
-    * We will not need the file, but a Key Pair must exist</u>
-5.  Now under **Services** open **CloudFormation**
-6.  Click “**Create Stack**”
-7.  Choose an **existing file in S3**: [InfraSecBuilderSessionEnvBuild.json](InfraSecBuilderSessionEnvBuild.json)
-8.  Fill out the screen as follows:
-    *   Stack Name: **FND203-Demo-Stack**
-    *  Availability Zone 1: **Pick any availability zone**
-    *   Availability Zone 2: **Pick any availability zone except the first one you picked**
-    *  LatestLinuxAmiID: **Leave as default.**
-    *  PassedKeyName: **FND203DemoKP**
-9.  Click “Next”
-10.  Click “Next” on the following screen.
-11.  Acknowledge the CloudFormation Template creates a user by checking the box.
-12.  Click “Create Stack”
-13.  Refresh the CloudFormation interface until the Status shows “Create Complete”
-14.  Click on the Stack Name
-15.  Go to the Outputs tab of the Stack
-16.  Make note of the DNS names. You can use these to validate the Web servers that should be publicly accessible are.
-    *  The LoadBalancerFullDNS, PoCWebServer1PublicDNS, and PoCWebServer2PublicDNS should all work.
-
-Now we’ve setup the environment I showed you on the slide. We can now move forward with your hand-on portion.
+For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we we will not specify each necessary click to accomplish a task, so we've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
 ## Enable granular logging to see everything in your AWS environment
 
@@ -69,6 +45,8 @@ When we looked at our on-premises environment we identified that disjointed secu
 
 ## Granular, Provable Control of Communications
 
+1.  Go to the **CloudTrail** service in the console
+2.  Click on Getting Started if you haven’t seen this before
 1.  Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
 2.  Picking a Security Group like the **Services Server Security Group** we can see the more traditional way of doing things.
 3.  Checking the **Outbound** rules, we see the servers can talk to a range of IP’s, 65,536 to be precise. But there are only maybe 6-8 servers that they actually need to talk to.
@@ -206,60 +184,3 @@ There’s still a risk of open administrative ports though right? Whether open t
         *  Should it work?
     *  Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
         *  Sure looks like an AWS server.
-
-## Extra Credit
-
-There’s a way to log all commands sent to the instance as well. But first you have to create S3 buckets and CloudWatch Logs
-
-1.  Go to **S3**.
-2.  **Create a Bucket** called **fdn203-ssmlogs-bucket-{myname}**. Before you move on, turn on **Default Encryption** using **AWS-KMS** and the **aws/s3**
-3.  Then **Grant Amazon S3 Log Delivery group write access to the bucket**.
-4.  Go to **CloudWatch**.
-5.  In **Logs** you must **Create log group**, called **fnd203-ssmlogs-logs**.
-6.  Go to **IAM**.
-7.  We will modify the **Role** called
-8.  Expand the Inline Policy and click **Edit Policy**
-9.  **Add additional permissions** including
-    1.  **S3**
-        1.  **Write**
-        2.  **Bucket: Any**
-        3.  **Object**: **Any**
-    2.  **CloudWatch Logs**
-        1.  **Write**
-        2.  **Log Group: Any**
-        3.  **Log Stream: Any**
-
-1.  **Review the policy** and **Save Changes**
-2.  If there are any errors, go to **Previous** and keep adding **Any** to the resources the policy requires defined.
-
-_<u>This can be more restrictive in a production environment.</u>_
-
-1.  Now go back to **Systems Manager**, **Session Manager**.
-2.  Let’s use **Preferences** to set up logging.
-3.  **Edit** the settings to **Write session output** and choose the bucket called “**fdn203-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
-4.  Let’s also send the output to **Cloudwatch logs**, we can deselect **Encrypt Log Data**, and create a log group name “**fdn203-demo-bucket-{myname}**”.
-    1.  In production I would not recommend storing unencrypted logs.
-5.  **Save** that configuration.
-6.  Now back at **Sessions**, you can **Start a session** with any server with the SSM agent and access to the SSM Service.
-    1.  curl http://169.254.169.254/latest/meta-data/instance-id
-    2.  curl http://169.254.169.254/latest/meta-data/security-groups
-    3.  curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
-7.  **Terminate** the connection.
-8.  Checking **Session History** you will see the **Output Location** of your log.
-9.  Look at the **CloudWatch Logs** of your session and see what commands you typed.
-
-Let’s go back to the presentation.
-
-## Clean up:
-
-1.  **Empty** and **Delete** your **fdn203-demo-bucket-{myname}** bucket
-2.  **Empty** and **Delete** your **fdn203-ssmlogs-bucket-{myname}** bucket
-    *  If you got this far
-3.  Turn off **Config**
-4.  Empty and Delete your **Config Bucket**
-5.  Delete your **CloudTrail Trail**
-6.  Disable **GuardDuty**
-7.  In **VPC**, go to the **NACLs** you created and **disassociate** them from any subnets.
-8.  Now **Delete** the **NACLs**.
-9.  In CloudFormation **Delete your Stack**
-    *  Wait until this is complete
