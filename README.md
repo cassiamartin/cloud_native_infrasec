@@ -2,31 +2,31 @@
 
 Here are the steps you’ll perform as part of this Builders Session:
 
-1.  Enable detailed, holistic logging and network-based security monitoring
-2.  Review and improve upon granular control of communication between workloads in the cloud
-3.  Improve upon granular network-based controls protection side-to-side movement
-4.  Evaluate detailed logging capabilities
-5.  Evaluate network-based protections
-6.  Further reduce administrative risks by reducing access and improving logging
+1.  [Enable detailed, holistic logging and network-based security monitoring](#Enable granular logging to see everything in your AWS environment)
+2.  [Review and improve upon granular control of communication between workloads in the cloud](#Granular, Provable Control of Communications)
+3.  [Improve upon granular network-based controls protection side-to-side movement](#When Security includes explicitly denying network access)
+4.  [Evaluate detailed logging capabilities](#Logging actions in your environment and making it easy to see what’s changed)
+5.  [Evaluate network-based protections](### Logging and monitoring of the network for bad behavior is important too)
+6.  [Further reduce administrative risks by reducing access and improving logging](#Reducing the risk of Admin access and administrative ports)
 
 For ease of experience, here are the general steps you will take. I want you to learn the interface though, so these instructions are more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
-<u>1\. First we build the environment using CloudFormation</u>
+### Build the environment using CloudFormation
 
 1.  We will need an EC2 Key Pair to build this stack.
 2.  Under **Services** go to **EC2**.
-3.  Select **Key Pairs** on the left.
-4.  **Create a Key Pair**. Name the Key Pair **FND203DemoKP** and save the file to your desktop.
-    1.  <u>We will not need the file, but a Key Pair must exist</u>
+9.  Select **Key Pairs** on the left.
+10.  **Create a Key Pair**. Name the Key Pair **FND203DemoKP** and save the file to your desktop.
+    * We will not need the file, but a Key Pair must exist</u>
 5.  Now under **Services** open **CloudFormation**
 6.  Click “**Create Stack**”
 7.  Choose an **existing file in S3**: [InfraSecBuilderSessionEnvBuild.json](InfraSecBuilderSessionEnvBuild.json)
 8.  Fill out the screen as follows:
-    1.  Stack Name: **FND203-Demo-Stack**
-    2.  Availability Zone 1: **Pick any availability zone**
-    3.  Availability Zone 2: **Pick any availability zone except the first one you picked**
-    4.  LatestLinuxAmiID: **Leave as default.**
-    5.  PassedKeyName: **FND203DemoKP**
+    *   Stack Name: **FND203-Demo-Stack**
+    *  Availability Zone 1: **Pick any availability zone**
+    *   Availability Zone 2: **Pick any availability zone except the first one you picked**
+    *  LatestLinuxAmiID: **Leave as default.**
+    *  PassedKeyName: **FND203DemoKP**
 9.  Click “Next”
 10.  Click “Next” on the following screen.
 11.  Acknowledge the CloudFormation Template creates a user by checking the box.
@@ -34,12 +34,12 @@ For ease of experience, here are the general steps you will take. I want you to 
 13.  Refresh the CloudFormation interface until the Status shows “Create Complete”
 14.  Click on the Stack Name
 15.  Go to the Outputs tab of the Stack
-16.  Make note of the DNS names. You can use these to validate the Web servers that should be publically accessible are.
-    1.  The LoadBalancerFullDNS, PoCWebServer1PublicDNS, and PoCWebServer2PublicDNS should all work.
+16.  Make note of the DNS names. You can use these to validate the Web servers that should be publicly accessible are.
+    *  The LoadBalancerFullDNS, PoCWebServer1PublicDNS, and PoCWebServer2PublicDNS should all work.
 
 Now we’ve setup the environment I showed you on the slide. We can now move forward with your hand-on portion.
 
-<u>1\. Enable granular logging to see everything in your AWS environment</u>
+## Enable granular logging to see everything in your AWS environment
 
 1.  Go to the **CloudTrail** service in the console
 2.  Click on Getting Started if you haven’t seen this before
@@ -49,7 +49,7 @@ Now we’ve setup the environment I showed you on the slide. We can now move for
 6.  We should save these for further evaluation, so you would want to **Create a new S3 bucket** and call it “**fdn203-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
 7.  Let’s **Create** that trail. We can come back to look at it later.
 
-Monitoring what API calls are made is great, but it’s difficult to convert that into something like Change Management for all infrastructure in the cloud. Is there a service to help there?
+    Monitoring what API calls are made is great, but it’s difficult to convert that into something like Change Management for all infrastructure in the cloud. Is there a service to help there?
 
 1.  **Services** called **Config** would be worth looking into.
 2.  After **Getting Started** we can start tracking All resources, Including Global Resources
@@ -58,14 +58,14 @@ Monitoring what API calls are made is great, but it’s difficult to convert tha
 5.  **Next**, we can choose rules we want to test against, but we can do that later too if we **Skip** it for now.
 6.  **Confirm**ing these choices will enable Config to monitor all changes to our environment. And we’ll see that in a bit.
 
-Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.
+  Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.
 
 1.  Using a **Service** like **GuardDuty** you can monitor logs in near-real-time for security anomalies.
 2.  After **Getting Started** we can quickly enable this service with just one click. It’s that easy. What is GuardDuty monitoring, we’ll check that out later.
 
 When we looked at our on-premises environment we identified that disjointed security tooling, lack of insight into what’s going on in the environment, and difficulty managing change control and permissions in the environment all led to risks becoming problems pretty fast. With the services we just enabled, we’ll see how we now have complete insight into who’s doing what in the environment, what changes are being made, and if and when problems start to arise.
 
-<u>2\. Granular, Provable Control of Communications</u>
+## Granular, Provable Control of Communications
 
 1.  Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
 2.  Picking a Security Group like the **Services Server Security Group** we can see the more traditional way of doing things.
@@ -77,64 +77,62 @@ When we looked at our on-premises environment we identified that disjointed secu
 
 In doing this, you’ve reduce the scope of internal traffic communication from 65,636 host down to 8\. Additionally, if you ever need to stand up more servers in these groups, they would be automatically accessible without intervention, as long as you put them in the same Security Group. On premise, you would either need to have Firewalls between all internal VLAN’s, Routers, and sites or complex Network ACL’s on every switch in your environment. This reduces the risk of threats, the risk of misconfiguration, and the operational burden all at once.
 
-<u>3\. When Security includes explicitly denying network access</u>
+## When Security includes explicitly denying network access
 
 1.  Security Groups are awesome at allowing access, but in **VPC** Services, **Network ACLs** are great at explicitly blocking them.
 2.  For instance, if you wanted to make sure you explicitly blocked the Load Balancer in my WebApp from talking to my Database servers, you could **Create a network ACL**.
 3.  I would Name it “**LoadBalancerIsolation**” and put it in the **Web Application VPC**.
 4.  I would add an **Outbound Rule** by **Editing Outbound Rules**
 5.  **Adding Rules** like
-    1.  Rule #: **50**
-    2.  Of type **All Traffic**
+    * Rule #: **50**
+    *  Of type **All Traffic**
     3.  To the Destination **10.0.2.0/24**
     4.  And a **Deny** Behavior
 
-And
+   And
 
-1.  Rule #: **60**
-2.  Of type **All Traffic**
-3.  To the Destination **10.0.130.0/24**
-4.  And a **Deny** Behavior
+    *  Rule #: **60**
+    2.  Of type **All Traffic**
+    3.  To the Destination **10.0.130.0/24**
+    4.  And a **Deny** Behavior
 
-And
+   And
+   *   Rule #: **100**
+   2.  Of type **All Traffic**
+   3.  To the Destination **10.0.0.0/8**
+   4.  And an **Allow** Behavior
 
-1.  Rule #: **100**
-2.  Of type **All Traffic**
-3.  To the Destination **10.0.0.0/8**
-4.  And an **Allow** Behavior
-
-Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
+   Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
 
 1.  After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule is necessary. **Add a Rule**
-    1.  Rule #: **100**
+    *  Rule #: **100**
     2.  Of type **All Traffic**
     3.  To the Destination **0.0.0.0/0**
     4.  And a **Allow** Behavior
 2.  After **Saving** you would then use **Subnet Associations** to **Edit Subnet Associations**.
 3.  Here you would Associate with the **Web App Public Subnet in AZ1** and **Web App Public Subnet in AZ2** subnets by clicking **Edit**.
 
-Now, you’ve effectively ensured that if the Load Balancers in your environment misbehave, they can’t communicate with or compromise the Database servers directly. But there was no additional hardware firewall or complex routing required to make this simple change in the simple network topology.
+  Now, you’ve effectively ensured that if the Load Balancers in your environment misbehave, they can’t communicate with or compromise the Database servers directly. But there was no additional hardware firewall or complex routing required to make this simple change in the simple network topology.
 
-But let’s say you want to go further. The Proof of Concept servers you built aren’t exchanging state so they don’t need to communicate to each other. This way, if one gets compromised it can’t hurt the other. Let’s build that protection.
+  But let’s say you want to go further. The Proof of Concept servers you built aren’t exchanging state so they don’t need to communicate to each other. This way, if one gets compromised it can’t hurt the other. Let’s build that protection.
 
 1.  You would **Create a network ACL**.
 2.  Name it “**PoCProtectionAZ1**” and put it in the **Proof of Concept VPC**.
 3.  Add an **Outbound Rule** by **Editing Outbound Rules**
 4.  **Add Rules**
-    1.  Rule #: **50**
+    *  Rule #: **50**
     2.  Of type **All Traffic**
     3.  To the Destination **10.250.128.0/24**
     4.  And a **Deny** Behavior
 
-And
-
-1.  Rule #: **100**
-2.  Of type **All Traffic**
-3.  To the Destination **0.0.0.0/0**
-4.  And an **Allow** Behavior
+   And
+   *  Rule #: **100**
+   2.  Of type **All Traffic**
+   3.  To the Destination **0.0.0.0/0**
+   4.  And an **Allow** Behavior
 
 1.  **Save** the rules and allow access to that subnet from the internet. **Edit inbound Rules** and **Add Rule**
-    1.  Rule #: **100**
+    *  Rule #: **100**
     2.  Of type **All Traffic**
     3.  To the Destination **0.0.0.0/0**
     4.  And a **Allow** Behavior
@@ -142,36 +140,36 @@ And
 1.  After **Saving** you would then use **Subnet Associations** to **Edit Subnet Associations**.
 2.  Here you would Associate with the **Proof of Concept Public Subnet in AZ1** subnets by clicking **Edit**.
 3.  You can choose to duplicate those steps to block the other direction by setting
-    1.  Name to “**PoCProtectionAZ2**”
+    *  Name to “**PoCProtectionAZ2**”
     2.  Blocking traffic to the Destination **10.250.0.0/24**
     3.  And Associating with **Proof of Concept Public Subnet in AZ2**
 
 Now, even within the same workload or application you are protecting servers from each other where putting Firewalls in the past would have been impossible.
 
-<u>4\. Logging actions in your environment and making it easy to see what’s changed</u>
+## Logging actions in your environment and making it easy to see what’s changed
 
 1.  We just made a bunch of changes, and on-premises it may be difficult to track them. Let’s check the **CloudTrail** in **Services** to see what it noticed.
 2.  The Dashboard shows us some recent events, but we want to see the complete **Event History**.
 3.  Here we can see your **User Name** performing actions tracked by **Event name** against different **Resource Names**. API commands not related to Data (because we chose that earlier) are being captured by CloudTrail.
 4.  You can remove the system calls by using a **Filter** on **User name** and putting your **Username** in the text box and hitting enter. Now **Scroll down**. Do you see all the ACL’s you changed?
 
-But again, seeing these API calls doesn’t give you a good visual of the changes occurring.
+  But again, seeing these API calls doesn’t give you a good visual of the changes occurring.
 
 1.  Lets go to **Config**.
 2.  I can see all of my resources, including some called **EC2 NetworkAcl**.
 3.  Clicking there gives you a list of ACL’s, and you can **click** on the first one.
 4.  Seeing details on that ACL, you can also see a visual **Configuration Timeline**
 5.  In the configuration timeline, you can see the changes that occurred over the past few minutes.
-    1.  If you don’t see any changes go back and choose a different ACL
+    *  If you don’t see any changes go back and choose a different ACL
 6.  If you expand **Changes** you can see exactly what changes you made to the resource, including what you applied it to as a **Relationship Change**.
 
 How would you do this on-premises?
 
-<u>5\. Logging and monitoring of the network for bad behavior is important too</u>
+## Logging and monitoring of the network for bad behavior is important too
 
 1.  Let’s go back to **GuardDuty** and see what findings we may have.
 
-If this is a new or infrequently used account, you may have no Findings. If you do have Findings and this is not a new account, we can walk through those separately.
+  If this is a new or infrequently used account, you may have no Findings. If you do have Findings and this is not a new account, we can walk through those separately.
 
 1.  Since this is a good design and relatively new, let’s create some demonstration findings in **Settings**
 2.  After we **Generate sample findings** we can go back to the **Findings**
@@ -187,7 +185,7 @@ If this is a new or infrequently used account, you may have no Findings. If you 
 
 Now you’ve seen that GuardDuty is monitoring logs on your behalf, and without you having to pay for storage, the AI/ML or Threat feeds, and the man hours to do the analysis. This is all happening at Cloud scale too, no longer do you need to have terabytes of logs that are never touched.
 
-<u>5\. Reducing the risk of Admin access and administrative ports</u>
+## Reducing the risk of Admin access and administrative ports
 
 There’s still a risk of open administrative ports though right? Whether open to the internet or open internally for malware to find it’s a risk. Except it doesn’t have to be.
 
@@ -199,16 +197,16 @@ There’s still a risk of open administrative ports though right? Whether open t
 6.  At **Sessions**, you can **Start a session** with any server with the SSM agent and access to the SSM Service.
 7.  We disabled all access to the **Services Server for AZ1**, yet there it is. Let’s select it and **Start session**.
 8.  Is this a console? For the AWS server? Let’s find out.
-    1.  Type: curl http://169.254.169.254/latest/meta-data/instance-id
-        1.  Does that instance ID look familiar?
+    *  Type: curl http://169.254.169.254/latest/meta-data/instance-id
+        *   Does that instance ID look familiar?
     2.  Try: curl http://169.254.169.254/latest/meta-data/security-groups
-        1.  That looks like the Security Group we modified doesn’t it?
+        *   That looks like the Security Group we modified doesn’t it?
     3.  Let’s try: Ping 8.8.8.8
-        1.  Should it work?
+        *  Should it work?
     4.  Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
-        1.  Sure looks like an AWS server.
+        *  Sure looks like an AWS server.
 
-<u>Extra Credit</u>
+## Extra Credit
 
 There’s a way to log all commands sent to the instance as well. But first you have to create S3 buckets and CloudWatch Logs
 
@@ -251,11 +249,11 @@ _<u>This can be more restrictive in a production environment.</u>_
 
 Let’s go back to the presentation.
 
-**<u>Clean up:</u>**
+## Clean up:
 
 1.  **Empty** and **Delete** your **fdn203-demo-bucket-{myname}** bucket
 2.  **Empty** and **Delete** your **fdn203-ssmlogs-bucket-{myname}** bucket
-    1.  If you got this far
+    *  If you got this far
 3.  Turn off **Config**
 4.  Empty and Delete your **Config Bucket**
 5.  Delete your **CloudTrail Trail**
@@ -263,4 +261,4 @@ Let’s go back to the presentation.
 7.  In **VPC**, go to the **NACLs** you created and **disassociate** them from any subnets.
 8.  Now **Delete** the **NACLs**.
 9.  In CloudFormation **Delete your Stack**
-    1.  Wait until this is complete to move forward.
+    *  Wait until this is complete
