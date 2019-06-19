@@ -11,14 +11,14 @@ There’s a way to log all commands sent to the instance as well. But first you 
 7.    We will modify the **Role** called
 8.    Expand the Inline Policy and click **Edit Policy**
 9.    **Add additional permissions** including
-         **S3**
-         >    **Write**
-         >    **Bucket: Any**
-         >    **Object**: **Any**
-         **CloudWatch Logs**
-         >    **Write**
-         >    **Log Group: Any**
-         >    **Log Stream: Any**
+         **S3**  
+         >    **Write**  
+         >    **Bucket: Any**  
+         >    **Object**: **Any**  
+         **CloudWatch Logs**  
+         >    **Write**  
+         >    **Log Group: Any**  
+         >    **Log Stream: Any**  
 10.    **Review the policy** and **Save Changes**
 11.    If there are any errors, go to **Previous** and keep adding **Any** to the resources the policy requires defined.
 _This can be more restrictive in a production environment._
@@ -29,9 +29,9 @@ _This can be more restrictive in a production environment._
          1.  In production I would not recommend storing unencrypted logs.
 16.    **Save** that configuration.
 17.    Now back at **Sessions**, you can **Start a session** with any server with the SSM agent and access to the SSM Service.
-        >  curl http://169.254.169.254/latest/meta-data/instance-id
-        >  curl http://169.254.169.254/latest/meta-data/security-groups
-        >  curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
+        >  curl http://169.254.169.254/latest/meta-data/instance-id  
+        >  curl http://169.254.169.254/latest/meta-data/security-groups  
+        >  curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole  
 18.    **Terminate** the connection.
 19.    Checking **Session History** you will see the **Output Location** of your log.
 20.    Look at the **CloudWatch Logs** of your session and see what commands you typed.
