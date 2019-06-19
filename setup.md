@@ -26,5 +26,5 @@
 17.  Copy the following DNS names into a separate note pad. You can go to these in a web browser to validate that the Web servers are publicly accessible.
      *  The LoadBalancerFullDNS, PoCWebServer1PublicDNS, and PoCWebServer2PublicDNS should all work.
 
-Now we’ve setup the environment I showed you on the slide. We can now move forward with [your hands on portion](../README.md).
+Now we’ve setup the environment I showed you on the slide. We can now move forward with [your hands on portion](./README.md).
 
