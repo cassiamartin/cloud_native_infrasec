@@ -1,23 +1,26 @@
 # re:Inforce 2019 FND203 - Mitigate Risks Using Cloud-Native Infrastructure Security
 
+Welcome to the builder session for FND 203 - mitigating risks using cloud-native infrastructure security. In this session, you will learn how to use cloud native controls like CloudTrail, Security Groups, GuardDuty and many more, to secure your cloud architecture.
+
 First you'll want to [Set up](./setup.md) your environment for this lab by running CloudFormation.
 
 Next, here are the steps you’ll perform as part of this Builders Session:
 
-1.    [Enable detailed, holistic logging and network-based security monitoring](#enable-granular-logging-to-see-everything-in-your-aws-environment)
-2.    [Review and improve upon granular control of communication between workloads in the cloud](#granular-provable-control-of-communications)
-3.    [Improve upon granular network-based controls protection side-to-side movement](#when-security-includes-explicitly-denying-network-access)
+1.    [Enable granular logging](#enable-granular-logging-to-see-everything-in-your-aws-environment)
+2.    [Improve granular control of communication](#granular-provable-control-of-communications)
+3.    [Improve granular network-based controls](#when-security-includes-explicitly-denying-network-access)
 4.    [Evaluate detailed logging capabilities](#logging-actions-in-your-environment-and-making-it-easy-to-see-whats-changed)
 5.    [Evaluate network-based protections](#logging-and-monitoring-of-the-network-for-bad-behavior-is-important-too)
-6.    [Further reduce administrative risks by reducing access and improving logging](#reducing-the-risk-of-admin-access-and-administrative-ports)
+6.    [Minimize admin access risk](#reducing-the-risk-of-admin-access-and-administrative-ports)
 
 If you complete all six steps with time to spare, there is [Extra Credit](./extracredit.md) available.
 
 Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you don't have any continuing charges.
 
-For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we we will not specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
+For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we will not specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
 ## Enable granular logging to see everything in your AWS environment
+We want to enable detailed, holistic logging and network-based security monitoring.
 1.    Go to the **CloudTrail** service in the console
 2.    Click on Getting Started if you haven’t seen this before
 3.    We want to **Create trail** in order to make sure we are capturing what exactly?
@@ -25,22 +28,21 @@ For ease of experience, many of the steps in this lab are written in general ste
 5.    Seeing **All Read/Write events** would show us every API call made to our AWS environment moving forward.
 6.    We should save these for further evaluation, so you would want to **Create a new S3 bucket** and call it “**fdn203-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
 7.    Let’s **Create** that trail. We can come back to look at it later.
-
-        Monitoring what API calls are made is great, but it’s difficult to convert that into something like Change Management for all infrastructure in the cloud. Is there a service to help there?
+Monitoring what API calls are made is great, but it’s difficult to convert that into something like Change Management for all infrastructure in the cloud. Is there a service to help there?
 8.    **Services** called **Config** would be worth looking into.
-2.    After **Getting Started** we can start tracking All resources, Including Global Resources
-3.    We would want to store this data in a central bucket as well. Let’s **Create a new bucket** and use the default to ensure its unique (Note: We could use the bucket we just created, but you would have to add permissions, which would take more time).
-4.    AWS does a good job of clearly defining roles, so let’s allow AWS to **Create AWS Config service-linked role**
-5.    **Next**, we can choose rules we want to test against, but we can do that later too if we **Skip** it for now.
-6.    **Confirm** these choices to enable Config to monitor all changes to our environment. And we’ll see that in a bit.
-
-        Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.
-7.    Using a **Service** like **GuardDuty** you can monitor logs in near-real-time for security anomalies.
-2.    After **Getting Started** we can quickly enable this service with just one click. It’s that easy. What is GuardDuty monitoring, we’ll check that out later.
+9.    After **Getting Started** we can start tracking All resources, Including Global Resources
+10.    We would want to store this data in a central bucket as well. Let’s **Create a new bucket** and use the default to ensure its unique (Note: We could use the bucket we just created, but you would have to add permissions, which would take more time).
+11.    AWS does a good job of clearly defining roles, so let’s allow AWS to **Create AWS Config service-linked role**
+12.    **Next**, we can choose rules we want to test against, but we can do that later too if we **Skip** it for now.
+13.    **Confirm** these choices to enable Config to monitor all changes to our environment. And we’ll see that in a bit.  
+Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.
+14.    Using a **Service** like **GuardDuty** you can monitor logs in near-real-time for security anomalies.
+15.    After **Getting Started** we can quickly enable this service with just one click. It’s that easy. What is GuardDuty monitoring, we’ll check that out later.
 
 When we looked at our on-premises environment we identified that disjointed security tooling, lack of insight into what’s going on in the environment, and difficulty managing change control and permissions in the environment all led to risks becoming problems pretty fast. With the services we just enabled, we’ll see how we now have complete insight into who’s doing what in the environment, what changes are being made, and if and when problems start to arise.
 
 ## Granular, Provable Control of Communications
+Let's review and improve upon granular control of communication between workloads in the cloud.
 1. Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your **EC2** Service **Security Groups** allows you to quickly see who can talk to whom.
 2.    Picking a Security Group like the **Services Server Security Group** we can see the more traditional way of doing things.
 3.    Checking the **Outbound** rules, we see the servers can talk to a range of IP’s, 65,536 to be precise. But there are only maybe 6-8 servers that they actually need to talk to.
@@ -52,6 +54,7 @@ When we looked at our on-premises environment we identified that disjointed secu
 In doing this, you’ve reduce the scope of internal traffic communication from 65,636 host down to 8\. Additionally, if you ever need to stand up more servers in these groups, they would be automatically accessible without intervention, as long as you put them in the same Security Group. On premise, you would either need to have Firewalls between all internal VLAN’s, Routers, and sites or complex Network ACL’s on every switch in your environment. This reduces the risk of threats, the risk of misconfiguration, and the operational burden all at once.
 
 ## When Security includes explicitly denying network access
+Let's improve on our network-based controls by using Network ACLs to prevent side-to-side movement in a granular way.
 1.    Security Groups are awesome at allowing access, but in **VPC** Services, **Network ACLs** are great at explicitly blocking them.
 2.    For instance, if you wanted to make sure you explicitly blocked the Load Balancer in my WebApp from talking to my Database servers, you could **Create a network ACL**.
 3.    I would Name it “**LoadBalancerIsolation**” and put it in the **Web Application VPC**.
@@ -122,13 +125,13 @@ Now, even within the same workload or application you are protecting servers fro
 1.    We just made a bunch of changes, and on-premises it may be difficult to track them. Let’s check the **CloudTrail** in **Services** to see what it noticed.
 2.    The Dashboard shows us some recent events, but we want to see the complete **Event History**.
 3.    Here we can see your **User Name** performing actions tracked by **Event name** against different **Resource Names**. API commands not related to Data (because we chose that earlier) are being captured by CloudTrail.
-4.    You can remove the system calls by using a **Filter** on **User name** and putting your **Username** in the text box and hitting enter. Now **Scroll down**. Do you see all the ACL’s you changed?
+4.    You can remove the system calls by using a **Filter** on **User Name** and putting your **User Name** in the text box and hitting enter. Now **Scroll down**. Do you see all the ACL’s you changed?
         But again, seeing these API calls doesn’t give you a good visual of the changes occurring.
-5.    Lets go to **Config**.
+5.    Let's go to **Config**.
 6.    I can see all of my resources, including some called **EC2 NetworkAcl**.
 3.    Clicking there gives you a list of ACL’s, and you can **click** on the first one.
 4.    Seeing details on that ACL, you can also see a visual **Configuration Timeline**
-5.    In the configuration timeline, you can see the changes that occurred over the past few minutes.
+5.    In the configuration timeline, you can see the changes that occurred over the past few minutes.  
              *    If you don’t see any changes go back and choose a different ACL
 6.    If you expand **Changes** you can see exactly what changes you made to the resource, including what you applied it to as a **Relationship Change**.
 
@@ -140,19 +143,19 @@ How would you do this on-premises?
 2.    Since this is a good design and relatively new, let’s create some demonstration findings in **Settings**
 3.    After we **Generate sample findings** we can go back to the **Findings**
 4.    17 High Severity Findings, 30 Medium Severity Findings, and 7 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] Trojan:EC2/PhishingDomainRequest!DNS**.
-5.    You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the **Action Type** help?
+5.    You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the **Action Type** help?  
            *    Ask me about the 3 data sources GuardDuty uses if you don’t already know.
 6.    **Scrolling down** the Findings list again you see another high severity **[SAMPLE] Backdoor:EC2/DenialOfService.UdpOnTcpPorts**.
 7.    Here you see a lot of the same type of information. But why is this **Action Type** different?
            *    If we didn’t turn on those logs how did it see the traffic?
 8.    **Scrolling down** the Findings list a bit more you find **[SAMPLE] UnauthorizedAccess:IAMUser/TorIPCaller**.
-9.    This one not only has a different **Action Type** but also starts with **IAMUser** instead of **EC2**. Why does that matter?
+9.    This one not only has a different **Action Type** but also starts with **IAMUser** instead of **EC2**. Why does that matter?  
           *    Is this a different data source?
 
 Now you’ve seen that GuardDuty is monitoring logs on your behalf, and without you having to pay for storage, the AI/ML or Threat feeds, and the man hours to do the analysis. This is all happening at Cloud scale too, no longer do you need to have terabytes of logs that are never touched.
 
 ## Reducing the risk of Admin access and administrative ports
-There’s still a risk of open administrative ports, right? It's a bigger risk if those ports are open to the internet and a smaller risk if open internally for malware to find. Can we find a way around this requirement?
+Finally, let's further reduce administrative risks by reducing access and improving logging. With our current setup, there is still a risk of open administrative ports, right? It's a bigger risk if those ports are open to the internet and a smaller risk if open internally for malware to find. Can we find a way around this requirement?
 1.    Let’s go back to **VPC** and **Security Groups**.
 2.    Open the **Services Server Security Group** and the **Inbound Rules**.
 3.    Now, despite the fact that those are made up IP’s, you are going to **Edit Rules** and delete all the rules (Click the x on the right). Then **Save** and **Close**.
@@ -169,3 +172,9 @@ There’s still a risk of open administrative ports, right? It's a bigger risk i
               *  Should it work?
         *    Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
               *  Sure looks like an AWS server.
+
+Congratulations!  You have successful set up this AWS environment for strong logging with Cloudtrail and Config, granular communication with Security Groups and nACLs, intelligent threat detection with AWS GuardDuty and removed additional admin port risk by configuring AWS System Manager.
+
+If you have reach the bottom of this page with time to spare, there is [Extra Credit](./extracredit.md) available.
+
+Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you don't have any continuing charges.
