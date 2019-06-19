@@ -132,14 +132,13 @@ Now, even within the same workload or application you are protecting servers fro
 3.    Clicking there gives you a list of ACL’s, and you can **click** on the first one.
 4.    Seeing details on that ACL, you can also see a visual **Configuration Timeline**
 5.    In the configuration timeline, you can see the changes that occurred over the past few minutes.  
-             *    If you don’t see any changes go back and choose a different ACL
+        * If you don’t see any changes go back and choose a different ACL
 6.    If you expand **Changes** you can see exactly what changes you made to the resource, including what you applied it to as a **Relationship Change**.
 
 How would you do this on-premises?
 
 ## Logging and monitoring of the network for bad behavior is important too
-1.    Let’s go back to **GuardDuty** and see what findings we may have.
-        If this is a new or infrequently used account, you may have no Findings. If you do have Findings and this is not a new account, we can walk through those separately.
+1.    Let’s go back to **GuardDuty** and see what findings we may have.  If this is a new or infrequently used account, you may have no Findings. If you do have Findings and this is not a new account, we can walk through those separately.
 2.    Since this is a good design and relatively new, let’s create some demonstration findings in **Settings**
 3.    After we **Generate sample findings** we can go back to the **Findings**
 4.    17 High Severity Findings, 30 Medium Severity Findings, and 7 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] Trojan:EC2/PhishingDomainRequest!DNS**.
