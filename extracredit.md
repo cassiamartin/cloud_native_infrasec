@@ -11,10 +11,12 @@ There’s a way to log all commands sent to the instance as well. But first you 
 7.    We will modify the **Role** called
 8.    Expand the Inline Policy and click **Edit Policy**
 9.    **Add additional permissions** including
+
          **S3**  
          >    **Write**  
          >    **Bucket: Any**  
          >    **Object**: **Any**  
+
          **CloudWatch Logs**  
          >    **Write**  
          >    **Log Group: Any**  
