@@ -1,4 +1,5 @@
 ## Clean up:
+In order to avoid unnecessary ongoing expenses, make sure to clean up all the resources you created in this lab. 
 
 1.  **Empty** and **Delete** your **fdn203-demo-bucket-{myname}** bucket
 2.  **Empty** and **Delete** your **fdn203-ssmlogs-bucket-{myname}** bucket
