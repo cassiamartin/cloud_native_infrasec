@@ -8,7 +8,7 @@ There’s a way to log all commands sent to the instance as well. But first you 
 4.    Go to **CloudWatch**.
 5.    In **Logs** you must **Create log group**, called **fnd203-ssmlogs-logs**.
 6.    Go to **IAM**.
-7.    We will modify the **Role** called
+7.    We will modify the **Role** called SharedServerConnectivityRole
 8.    Expand the Inline Policy and click **Edit Policy**
 9.    **Add additional permissions** including
 
