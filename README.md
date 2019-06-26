@@ -79,7 +79,7 @@ Let's improve on our network-based controls by using Network ACLs to prevent sid
 
         Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
 
-6.    After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule is necessary. **Add a Rule**
+6.    After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule for **Inbound Rules** is necessary. **Add a Rule**
         >   Rule #: **100**  
         >   Of type **All Traffic**  
         >   To the Destination **0.0.0.0/0**  
