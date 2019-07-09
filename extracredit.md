@@ -26,7 +26,7 @@ There’s a way to log all commands sent to the instance as well. But first you 
 _This can be more restrictive in a production environment._
 12.    Now go back to **Systems Manager**, **Session Manager**.
 13.    Let’s use **Preferences** to set up logging.
-14.    **Edit** the settings to **Write session output** and choose the bucket called “**fdn203-demo-bucket-{myname}**”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)
+14.    **Edit** the settings to **Write session output** and choose the bucket called “**fdn203-ssmlogs-bucket-{myname}**”. 
 15.    Let’s also send the output to **Cloudwatch logs**, we can deselect **Encrypt Log Data**, and create a log group name “**fdn203-demo-bucket-{myname}**”.
          * In production I would not recommend storing unencrypted logs.
 16.    **Save** that configuration.
