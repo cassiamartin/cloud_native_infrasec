@@ -4,7 +4,7 @@ Welcome to the builder session for FND 203 - mitigating risks using cloud-native
 
 First you'll want to [Set up](./setup.md) your environment for this lab by running CloudFormation.
 
-Next, here are the steps you’ll perform as part of this Builders Session:
+Next, here are the steps you’ll perform as part of this Builder Session:
 
 1.    [Enable granular logging](#enable-granular-logging-to-see-everything-in-your-aws-environment)
 2.    [Improve granular control of communication](#granular-provable-control-of-communications)
@@ -17,7 +17,7 @@ If you complete all six steps with time to spare, there is [Extra Credit](./extr
 
 Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you don't have any continuing charges.
 
-For ease of experience, many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we will not specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
+Many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we will not always specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.
 
 ## Enable granular logging to see everything in your AWS environment
 We want to enable detailed, holistic logging and network-based security monitoring.
