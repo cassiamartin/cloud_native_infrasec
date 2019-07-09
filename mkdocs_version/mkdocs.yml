@@ -1,0 +1,6 @@
+site_name: Mitigate Risks Using Cloud-Native Infrastructure Security
+nav:
+    - Home: index.md
+    - Set Up: setup.md
+    - Extra Credit: extracredit.md
+    - Clean Up: cleanup.md
