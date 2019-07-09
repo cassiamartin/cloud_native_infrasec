@@ -63,59 +63,52 @@ Let's improve on our network-based controls by using Network ACLs to prevent sid
 2.    For instance, if you wanted to make sure you explicitly blocked the Load Balancer in my WebApp from talking to my Database servers, you could **Create a network ACL**.
 3.    I would Name it “**LoadBalancerIsolation**” and put it in the **Web Application VPC**.
 4.    I would add an **Outbound Rule** by **Editing Outbound Rules**
-5.    **Adding Rules** like
-        > Rule #: **50**  
-        > Of type **All Traffic**  
-        > To the Destination **10.0.2.0/24**  
-        > And a **Deny** Behavior  
-
-        and
-        > Rule #: **60**  
-        > Of type **All Traffic**  
-        > To the Destination **10.0.130.0/24**  
-        > And a **Deny** Behavior  
-
-       and
-        > Rule #: **100**  
-        > Of type **All Traffic**  
-        > To the Destination **10.0.0.0/8**  
-        > And an **Allow** Behavior  
-
-        Would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
-
+5.    **Adding Rules** like these would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.
+      * Rule #: **50**  
+      Of type **All Traffic**  
+      To the Destination **10.0.2.0/24**  
+      And a **Deny** Behavior  
+           and
+      * Rule #: **60**  
+      Of type **All Traffic**  
+      To the Destination **10.0.130.0/24**  
+      And a **Deny** Behavior  
+           and
+      * Rule #: **100**  
+      Of type **All Traffic**  
+      To the Destination **10.0.0.0/8**  
+      And an **Allow** Behavior  
 6.    After **Saving** you need to allow access to that subnet from the internet, so recreating the **All Traffic Allow** rule for **Inbound Rules** is necessary. **Add a Rule**
-        >   Rule #: **100**  
-        >   Of type **All Traffic**  
-        >   To the Destination **0.0.0.0/0**  
-        >   And a **Allow** Behavior
+      * Rule #: **100**  
+      Of type **All Traffic**  
+      To the Destination **0.0.0.0/0**  
+      And a **Allow** Behavior
 2.    After **Saving** you would then use **Subnet Associations** to **Edit Subnet Associations**.
 3.    Here you would Associate with the **Web App Public Subnet in AZ1** and **Web App Public Subnet in AZ2** subnets by clicking **Edit**.
 
-        Now, you’ve effectively ensured that if the Load Balancers in your environment misbehave, they can’t communicate with or compromise the Database servers directly. But there was no additional hardware firewall or complex routing required to make this simple change in the simple network topology.
+      Now, you’ve effectively ensured that if the Load Balancers in your environment misbehave, they can’t communicate with or compromise the Database servers directly. But there was no additional hardware firewall or complex routing required to make this simple change in the simple network topology.
 
-        But let’s say you want to go further. The Proof of Concept servers you built aren’t exchanging state so they don’t need to communicate to each other. This way, if one gets compromised it can’t hurt the other. Let’s build that protection.
+     But let’s say you want to go further. The Proof of Concept servers you built aren’t exchanging state so they don’t need to communicate to each other. This way, if one gets compromised it can’t hurt the other. Let’s build that protection.
 
 1.    You would **Create a network ACL**.
 2.    Name it “**PoCProtectionAZ1**” and put it in the **Proof of Concept VPC**.
 3.    Add an **Outbound Rule** by **Editing Outbound Rules**
 4.    **Add Rules**
-        >  Rule #: **50**  
-        >  Of type **All Traffic**  
-        >  To the Destination **10.250.128.0/24**  
-        >  And a **Deny** Behavior  
-
+      * Rule #: **50**  
+      Of type **All Traffic**  
+      To the Destination **10.250.128.0/24**  
+      And a **Deny** Behavior  
         and
-        >  Rule #: **100**  
-        >  Of type **All Traffic**  
-        >  To the Destination **0.0.0.0/0**  
-        >  And an **Allow** Behavior  
+      * Rule #: **100**  
+      Of type **All Traffic**  
+      To the Destination **0.0.0.0/0**  
+      And an **Allow** Behavior  
 
 1.    **Save** the rules and allow access to that subnet from the internet. **Edit inbound Rules** and **Add Rule**
-        >    Rule #: **100**  
-        >    Of type **All Traffic**  
-        >    To the Destination **0.0.0.0/0**  
-        >    And a **Allow** Behavior  
-
+      * Rule #: **100**  
+      Of type **All Traffic**  
+      To the Destination **0.0.0.0/0**  
+      And an **Allow** Behavior  
 1.    After **Saving** you would then use **Subnet Associations** to **Edit Subnet Associations**.
 2.    Here you would Associate with the **Proof of Concept Public Subnet in AZ1** subnets by clicking **Edit**.
 3.    You can choose to duplicate those steps to block the other direction by setting
@@ -136,7 +129,7 @@ Now, even within the same workload or application you are protecting servers fro
 3.    Clicking there gives you a list of ACL’s, and you can **click** on the first one.
 4.    Seeing details on that ACL, you can also see a visual **Configuration Timeline**
 5.    In the configuration timeline, you can see the changes that occurred over the past few minutes.  
-        * If you don’t see any changes go back and choose a different ACL
+      * If you don’t see any changes go back and choose a different ACL
 6.    If you expand **Changes** you can see exactly what changes you made to the resource, including what you applied it to as a **Relationship Change**.
 
 How would you do this on-premises?
@@ -147,13 +140,13 @@ How would you do this on-premises?
 3.    After we **Generate sample findings** we can go back to the **Findings**
 4.    17 High Severity Findings, 30 Medium Severity Findings, and 7 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, **[SAMPLE] Trojan:EC2/PhishingDomainRequest!DNS**.
 5.    You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the **Action Type** help?  
-        * Ask me about the 3 data sources GuardDuty uses if you don’t already know.
+      * What are the 3 data sources GuardDuty uses?
 6.    **Scrolling down** the Findings list again you see another high severity **[SAMPLE] Backdoor:EC2/DenialOfService.UdpOnTcpPorts**.
 7.    Here you see a lot of the same type of information. But why is this **Action Type** different?
-        * If we didn’t turn on those logs how did it see the traffic?
+      * If we didn’t turn on those logs how did it see the traffic?
 8.    **Scrolling down** the Findings list a bit more you find **[SAMPLE] UnauthorizedAccess:IAMUser/TorIPCaller**.
 9.    This one not only has a different **Action Type** but also starts with **IAMUser** instead of **EC2**. Why does that matter?  
-        *  Is this a different data source?
+      *  Is this a different data source?
 
 Now you’ve seen that GuardDuty is monitoring logs on your behalf, and without you having to pay for storage, the AI/ML or Threat feeds, and the man hours to do the analysis. This is all happening at Cloud scale too, no longer do you need to have terabytes of logs that are never touched.
 
@@ -162,23 +155,23 @@ Finally, let's further reduce administrative risks by reducing access and improv
 
 1.    Let’s go back to **VPC** and **Security Groups**.
 2.    Open the **Services Server Security Group** and the **Inbound Rules**.
-3.    Now, despite the fact that those are made up IP’s, you are going to **Edit Rules** and delete all the rules (Click the x on the right). Then **Save** and **Close**.
+3.    Now, despite the fact that those are made up IPs, you are going to **Edit Rules** and delete all the rules (Click the x on the right). Then **Save** and **Close**.
 4.    But with no access, how can we monitor or log into the box if we need to? Our **Service** called **Systems Manager** can help there.
 5.    Systems Manager has a feature called **Session Manager** worth checking out.
 6.    At **Sessions**, you can **Start a session** with any server with the SSM agent and access to the SSM Service.
 7.    We disabled all access to the **Services Server for AZ1**, yet there it is. Let’s select it and **Start session**.
 8.    Is this a console? For the AWS server? Let’s find out.
-        *    Type: curl http://169.254.169.254/latest/meta-data/instance-id
-              *   Does that instance ID look familiar?
-        *    Try: curl http://169.254.169.254/latest/meta-data/security-groups
-              *  That looks like the Security Group we modified doesn’t it?
-        *    Let’s try: Ping 8.8.8.8
-              *  Should it work?
-        *    Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
-              *  Sure looks like an AWS server.
+      *    Type: curl http://169.254.169.254/latest/meta-data/instance-id
+           *   Does that instance ID look familiar?
+      *    Try: curl http://169.254.169.254/latest/meta-data/security-groups
+           *  That looks like the Security Group we modified doesn’t it?
+      *    Let’s try: Ping 8.8.8.8
+           *  Should it work?
+      *    Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole
+           *  Sure looks like an AWS server.
 
-Congratulations!  You have successful set up this AWS environment for strong logging with Cloudtrail and Config, granular communication with Security Groups and nACLs, intelligent threat detection with AWS GuardDuty and removed additional admin port risk by configuring AWS System Manager.
+Congratulations!  You have successfully set up this AWS environment for strong logging with Cloudtrail and Config, granular communication with Security Groups and nACLs, intelligent threat detection with AWS GuardDuty and removed additional admin port risk by configuring AWS System Manager.
 
-If you have reach the bottom of this page with time to spare, there is [Extra Credit](./extracredit.md) available.
+If you have reached the bottom of this page with time to spare, there is [Extra Credit](./extracredit.md) available.
 
 Finally, make sure to [Clean up](./cleanup.md) your environment to ensure you don't have any continuing charges.
