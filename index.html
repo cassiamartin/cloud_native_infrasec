@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="img/favicon.ico">
+        <title>Mitigate Risks Using Cloud-Native Infrastructure Security</title>
+        <link href="css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="css/font-awesome.min.css" rel="stylesheet">
+        <link href="css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="js/jquery-1.10.2.min.js" defer></script>
+        <script src="js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body class="homepage">
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href=".">Mitigate Risks Using Cloud-Native Infrastructure Security</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="active">
+                                <a href=".">Home</a>
+                            </li>
+                            <li >
+                                <a href="setup/">Set Up</a>
+                            </li>
+                            <li >
+                                <a href="extracredit/">Extra Credit</a>
+                            </li>
+                            <li >
+                                <a href="cleanup/">Clean Up</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="disabled">
+                                <a rel="next" >
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="setup/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#mitigate-risks-using-cloud-native-infrastructure-security">Mitigate Risks Using Cloud-Native Infrastructure Security</a></li>
+            <li><a href="#enable-granular-logging-to-see-everything-in-your-aws-environment">Enable granular logging to see everything in your AWS environment</a></li>
+            <li><a href="#granular-provable-control-of-communications">Granular, Provable Control of Communications</a></li>
+            <li><a href="#when-security-includes-explicitly-denying-network-access">When Security includes explicitly denying network access</a></li>
+            <li><a href="#logging-actions-in-your-environment-and-making-it-easy-to-see-whats-changed">Logging actions in your environment and making it easy to see what’s changed</a></li>
+            <li><a href="#logging-and-monitoring-of-the-network-for-bad-behavior-is-important-too">Logging and monitoring of the network for bad behavior is important too</a></li>
+            <li><a href="#reducing-the-risk-of-admin-access-and-administrative-ports">Reducing the risk of Admin access and administrative ports</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="mitigate-risks-using-cloud-native-infrastructure-security">Mitigate Risks Using Cloud-Native Infrastructure Security</h1>
+<p>In this workshop, you will learn how to use cloud native controls like CloudTrail, Security Groups, GuardDuty and many more, to secure your cloud architecture.</p>
+<p>First you'll want to <a href="setup/">Set up</a> your environment for this lab by running CloudFormation.</p>
+<p>Here are the steps you’ll perform as part of this Builder Session:</p>
+<ol>
+<li><a href="#enable-granular-logging-to-see-everything-in-your-aws-environment">Enable granular logging</a></li>
+<li><a href="#granular-provable-control-of-communications">Improve granular control of communication</a></li>
+<li><a href="#when-security-includes-explicitly-denying-network-access">Improve granular network-based controls</a></li>
+<li><a href="#logging-actions-in-your-environment-and-making-it-easy-to-see-whats-changed">Evaluate detailed logging capabilities</a></li>
+<li><a href="#logging-and-monitoring-of-the-network-for-bad-behavior-is-important-too">Evaluate network-based protections</a></li>
+<li><a href="#reducing-the-risk-of-admin-access-and-administrative-ports">Minimize admin access risk</a></li>
+</ol>
+<p>If you complete all six steps with time to spare, there is <a href="extracredit/">Extra Credit</a> available.</p>
+<p>Finally, make sure to <a href="cleanup/">Clean up</a> your environment to ensure you don't have any continuing charges.</p>
+<p>Many of the steps in this lab are written in general steps. This is intentional - we want you to learn the AWS interface, so we will not always specify each necessary click to accomplish a task.  We've written more of a guide than a tutorial. Please don’t hesitate to ask questions.</p>
+<h2 id="enable-granular-logging-to-see-everything-in-your-aws-environment">Enable granular logging to see everything in your AWS environment</h2>
+<p>We want to enable detailed, holistic logging and network-based security monitoring.</p>
+<ol>
+<li>Go to the <strong>CloudTrail</strong> service in the console</li>
+<li>If it appears, click on Getting Started.</li>
+<li>We want to <strong>Create trail</strong>. <ul>
+<li>What are we capturing, exactly? </li>
+</ul>
+</li>
+<li>Let’s set a <strong>Trail Name</strong> of “<strong>All-API-Commands-across-all-Regions</strong>”. Then let’s <strong>Apply trail to all regions</strong> with a single click.</li>
+<li>Seeing <strong>All Read/Write events</strong> would show us every API call made to our AWS environment moving forward.</li>
+<li>We should save these for further evaluation, so you would want to <strong>Create a new S3 bucket</strong> and call it “<strong>fdn203-demo-bucket-{myname}</strong>”. (Don’t forget, S3 buckets must have unique names, so make sure to add your name at the end. They can also only be lower case letters, numbers, “-“, and “.”)</li>
+<li>Let’s <strong>Create</strong> that trail. We can come back to look at it later.
+Monitoring what API calls are made is great, but it’s difficult to convert that into something like Change Management for all infrastructure in the cloud. Is there a service to help there?</li>
+<li><strong>Services</strong> called <strong>Config</strong> would be worth looking into.</li>
+<li>After <strong>Getting Started</strong> we can start tracking All resources, Including Global Resources</li>
+<li>We would want to store this data in a central bucket as well. Let’s <strong>Create a new bucket</strong> and use the default to ensure its unique (Note: We could use the bucket we just created, but you would have to add permissions, which would take more time).</li>
+<li>AWS does a good job of clearly defining roles, so let’s allow AWS to <strong>Create AWS Config service-linked role</strong></li>
+<li><strong>Next</strong>, we can choose rules we want to test against, but we can do that later too if we <strong>Skip</strong> it for now.</li>
+<li><strong>Confirm</strong> these choices to enable Config to monitor all changes to our environment. And we’ll see that in a bit.<br />
+Now that we’ve got good logging of the Control Plane (API commands and Changes to the environment), let’s turn on logging of the Data Plane.</li>
+<li>Using a <strong>Service</strong> like <strong>GuardDuty</strong> you can monitor logs in near-real-time for security anomalies.</li>
+<li>After <strong>Getting Started</strong> we can quickly enable this service with just one click. It’s that easy. What is GuardDuty monitoring, we’ll check that out later.</li>
+</ol>
+<p>When we looked at our on-premises environment we identified that disjointed security tooling, lack of insight into what’s going on in the environment, and difficulty managing change control and permissions in the environment all led to risks becoming problems pretty fast. With the services we just enabled, we’ll see how we now have complete insight into who’s doing what in the environment, what changes are being made, and if and when problems start to arise.</p>
+<h2 id="granular-provable-control-of-communications">Granular, Provable Control of Communications</h2>
+<p>Let's review and improve upon granular control of communication between workloads in the cloud.</p>
+<ol>
+<li>Looking at the granular control of system-to-system communication used to be difficult. Now, looking at your <strong>EC2</strong> Service <strong>Security Groups</strong> allows you to quickly see who can talk to whom.</li>
+<li>Picking a Security Group like the <strong>Services Server Security Group</strong> we can see the more traditional way of doing things.</li>
+<li>Checking the <strong>Outbound</strong> rules, we see the servers can talk to a range of IP’s, 65,536 to be precise. But there are only maybe 6-8 servers that they actually need to talk to.</li>
+<li>Well, if we copy the <strong>GroupID</strong> of the <strong>PoC Web Server Security Group</strong> we start to reduce that number</li>
+<li><strong>Edit</strong> the <strong>Outbound</strong> <strong>Services Server Security Group</strong> rules and replace the 10.0.0.0/16 with the Security Group name you copied.</li>
+<li><strong>Save</strong> this and you’ll see the <strong>Destination</strong> of the rule now shows the Security Group you listed.</li>
+<li>You can <strong>repeat</strong> this by <strong>Edit</strong>ing and <strong>Adding Rule</strong>s for each security group you want to allow access to.</li>
+</ol>
+<p>In doing this, you’ve reduce the scope of internal traffic communication from 65,636 host down to 8. Additionally, if you ever need to stand up more servers in these groups, they would be automatically accessible without intervention, as long as you put them in the same Security Group. On premise, you would either need to have Firewalls between all internal VLAN’s, Routers, and sites or complex Network ACL’s on every switch in your environment. This reduces the risk of threats, the risk of misconfiguration, and the operational burden all at once.</p>
+<h2 id="when-security-includes-explicitly-denying-network-access">When Security includes explicitly denying network access</h2>
+<p>Let's improve on our network-based controls by using Network ACLs to prevent side-to-side movement in a granular way.</p>
+<ol>
+<li>Security Groups are awesome at allowing access, but in <strong>VPC</strong> Services, <strong>Network ACLs</strong> are great at explicitly blocking them.</li>
+<li>For instance, if you wanted to make sure you explicitly blocked the Load Balancer in my WebApp from talking to my Database servers, you could <strong>Create a network ACL</strong>.</li>
+<li>I would Name it “<strong>LoadBalancerIsolation</strong>” and put it in the <strong>Web Application VPC</strong>.</li>
+<li>I would add an <strong>Outbound Rule</strong> by <strong>Editing Outbound Rules</strong></li>
+<li><strong>Adding Rules</strong> like these would block whatever Subnet you apply this to from talking to the Database Subnets but still allow access to the rest of the network, including the Web and Services VPC.<ul>
+<li>Rule #: <strong>50</strong><br />
+  Of type <strong>All Traffic</strong><br />
+  To the Destination <strong>10.0.2.0/24</strong><br />
+  And a <strong>Deny</strong> Behavior<br />
+       and</li>
+<li>Rule #: <strong>60</strong><br />
+  Of type <strong>All Traffic</strong><br />
+  To the Destination <strong>10.0.130.0/24</strong><br />
+  And a <strong>Deny</strong> Behavior<br />
+       and</li>
+<li>Rule #: <strong>100</strong><br />
+  Of type <strong>All Traffic</strong><br />
+  To the Destination <strong>10.0.0.0/8</strong><br />
+  And an <strong>Allow</strong> Behavior  </li>
+</ul>
+</li>
+<li>After <strong>Saving</strong> you need to allow access to that subnet from the internet, so recreating the <strong>All Traffic Allow</strong> rule for <strong>Inbound Rules</strong> is necessary. <strong>Add a Rule</strong><ul>
+<li>Rule #: <strong>100</strong><br />
+  Of type <strong>All Traffic</strong><br />
+  To the Destination <strong>0.0.0.0/0</strong><br />
+  And a <strong>Allow</strong> Behavior</li>
+</ul>
+</li>
+<li>After <strong>Saving</strong> you would then use <strong>Subnet Associations</strong> to <strong>Edit Subnet Associations</strong>.</li>
+<li>
+<p>Here you would Associate with the <strong>Web App Public Subnet in AZ1</strong> and <strong>Web App Public Subnet in AZ2</strong> subnets by clicking <strong>Edit</strong>.</p>
+<p>Now, you’ve effectively ensured that if the Load Balancers in your environment misbehave, they can’t communicate with or compromise the Database servers directly. But there was no additional hardware firewall or complex routing required to make this simple change in the simple network topology.</p>
+<p>But let’s say you want to go further. The Proof of Concept servers you built aren’t exchanging state so they don’t need to communicate to each other. This way, if one gets compromised it can’t hurt the other. Let’s build that protection.</p>
+</li>
+<li>
+<p>You would <strong>Create a network ACL</strong>.</p>
+</li>
+<li>Name it “<strong>PoCProtectionAZ1</strong>” and put it in the <strong>Proof of Concept VPC</strong>.</li>
+<li>Add an <strong>Outbound Rule</strong> by <strong>Editing Outbound Rules</strong></li>
+<li>
+<p><strong>Add Rules</strong></p>
+<ul>
+<li>Rule #: <strong>50</strong><br />
+  Of type <strong>All Traffic</strong><br />
+  To the Destination <strong>10.250.128.0/24</strong><br />
+  And a <strong>Deny</strong> Behavior<br />
+    and</li>
+<li>Rule #: <strong>100</strong><br />
+  Of type <strong>All Traffic</strong><br />
+  To the Destination <strong>0.0.0.0/0</strong><br />
+  And an <strong>Allow</strong> Behavior  </li>
+</ul>
+</li>
+<li>
+<p><strong>Save</strong> the rules and allow access to that subnet from the internet. <strong>Edit inbound Rules</strong> and <strong>Add Rule</strong></p>
+<ul>
+<li>Rule #: <strong>100</strong><br />
+  Of type <strong>All Traffic</strong><br />
+  To the Destination <strong>0.0.0.0/0</strong><br />
+  And an <strong>Allow</strong> Behavior  </li>
+</ul>
+</li>
+<li>After <strong>Saving</strong> you would then use <strong>Subnet Associations</strong> to <strong>Edit Subnet Associations</strong>.</li>
+<li>Here you would Associate with the <strong>Proof of Concept Public Subnet in AZ1</strong> subnets by clicking <strong>Edit</strong>.</li>
+<li>You can choose to duplicate those steps to block the other direction by setting
+        *    Name to “<strong>PoCProtectionAZ2</strong>”
+        *    Blocking traffic to the Destination <strong>10.250.0.0/24</strong>
+        *    And Associating with <strong>Proof of Concept Public Subnet in AZ2</strong></li>
+</ol>
+<p>Now, even within the same workload or application you are protecting servers from each other where putting Firewalls in the past would have been impossible.</p>
+<h2 id="logging-actions-in-your-environment-and-making-it-easy-to-see-whats-changed">Logging actions in your environment and making it easy to see what’s changed</h2>
+<ol>
+<li>We just made a bunch of changes, and on-premises it may be difficult to track them. Let’s check the <strong>CloudTrail</strong> in <strong>Services</strong> to see what it noticed.</li>
+<li>The Dashboard shows us some recent events, but we want to see the complete <strong>Event History</strong>.</li>
+<li>Here we can see your <strong>User Name</strong> performing actions tracked by <strong>Event name</strong> against different <strong>Resource Names</strong>. API commands not related to Data (because we chose that earlier) are being captured by CloudTrail.</li>
+<li>You can remove the system calls by using a <strong>Filter</strong> on <strong>User Name</strong> and putting your <strong>User Name</strong> in the text box and hitting enter. Now <strong>Scroll down</strong>. Do you see all the ACL’s you changed?
+        But again, seeing these API calls doesn’t give you a good visual of the changes occurring.</li>
+<li>Let's go to <strong>Config</strong>.</li>
+<li>I can see all of my resources, including some called <strong>EC2 NetworkAcl</strong>.</li>
+<li>Clicking there gives you a list of ACL’s, and you can <strong>click</strong> on the first one.</li>
+<li>Seeing details on that ACL, you can also see a visual <strong>Configuration Timeline</strong></li>
+<li>In the configuration timeline, you can see the changes that occurred over the past few minutes.  <ul>
+<li>If you don’t see any changes go back and choose a different ACL</li>
+</ul>
+</li>
+<li>If you expand <strong>Changes</strong> you can see exactly what changes you made to the resource, including what you applied it to as a <strong>Relationship Change</strong>.</li>
+</ol>
+<p>How would you do this on-premises?</p>
+<h2 id="logging-and-monitoring-of-the-network-for-bad-behavior-is-important-too">Logging and monitoring of the network for bad behavior is important too</h2>
+<ol>
+<li>Let’s go back to <strong>GuardDuty</strong> and see what findings we may have.  If this is a new or infrequently used account, you may have no Findings. If you do have Findings and this is not a new account, we can walk through those separately.</li>
+<li>Since this is a good design and relatively new, let’s create some demonstration findings in <strong>Settings</strong></li>
+<li>After we <strong>Generate sample findings</strong> we can go back to the <strong>Findings</strong></li>
+<li>17 High Severity Findings, 30 Medium Severity Findings, and 7 Informational Findings (where can you see those numbers quickly) show up. Let’s investigate the first High Severity, <strong>[SAMPLE] Trojan:EC2/PhishingDomainRequest!DNS</strong>.</li>
+<li>You can see the (fake) instance that caused this Finding, what the instance did wrong, when it occurred, and more information. The “!DNS” at the end means something, do you know what? Does the <strong>Action Type</strong> help?  <ul>
+<li>What are the 3 data sources GuardDuty uses?</li>
+</ul>
+</li>
+<li><strong>Scrolling down</strong> the Findings list again you see another high severity <strong>[SAMPLE] Backdoor:EC2/DenialOfService.UdpOnTcpPorts</strong>.</li>
+<li>Here you see a lot of the same type of information. But why is this <strong>Action Type</strong> different?<ul>
+<li>If we didn’t turn on those logs how did it see the traffic?</li>
+</ul>
+</li>
+<li><strong>Scrolling down</strong> the Findings list a bit more you find <strong>[SAMPLE] UnauthorizedAccess:IAMUser/TorIPCaller</strong>.</li>
+<li>This one not only has a different <strong>Action Type</strong> but also starts with <strong>IAMUser</strong> instead of <strong>EC2</strong>. Why does that matter?  <ul>
+<li>Is this a different data source?</li>
+</ul>
+</li>
+</ol>
+<p>Now you’ve seen that GuardDuty is monitoring logs on your behalf, and without you having to pay for storage, the AI/ML or Threat feeds, and the man hours to do the analysis. This is all happening at Cloud scale too, no longer do you need to have terabytes of logs that are never touched.</p>
+<h2 id="reducing-the-risk-of-admin-access-and-administrative-ports">Reducing the risk of Admin access and administrative ports</h2>
+<p>Finally, let's further reduce administrative risks by reducing access and improving logging. With our current setup, there is still a risk of open administrative ports, right? It's a bigger risk if those ports are open to the internet and a smaller risk if open internally for malware to find. Can we find a way around this requirement?</p>
+<ol>
+<li>Let’s go back to <strong>VPC</strong> and <strong>Security Groups</strong>.</li>
+<li>Open the <strong>Services Server Security Group</strong> and the <strong>Inbound Rules</strong>.</li>
+<li>Now, despite the fact that those are made up IPs, you are going to <strong>Edit Rules</strong> and delete all the rules (Click the x on the right). Then <strong>Save</strong> and <strong>Close</strong>.</li>
+<li>But with no access, how can we monitor or log into the box if we need to? Our <strong>Service</strong> called <strong>Systems Manager</strong> can help there.</li>
+<li>Systems Manager has a feature called <strong>Session Manager</strong> worth checking out.</li>
+<li>At <strong>Sessions</strong>, you can <strong>Start a session</strong> with any server with the SSM agent and access to the SSM Service.</li>
+<li>We disabled all access to the <strong>Services Server for AZ1</strong>, yet there it is. Let’s select it and <strong>Start session</strong>.</li>
+<li>Is this a console? For the AWS server? Let’s find out.<ul>
+<li>Type: curl http://169.254.169.254/latest/meta-data/instance-id<ul>
+<li>Does that instance ID look familiar?</li>
+</ul>
+</li>
+<li>Try: curl http://169.254.169.254/latest/meta-data/security-groups<ul>
+<li>That looks like the Security Group we modified doesn’t it?</li>
+</ul>
+</li>
+<li>Let’s try: Ping 8.8.8.8<ul>
+<li>Should it work?</li>
+</ul>
+</li>
+<li>Last time: curl http://169.254.169.254/latest/meta-data/iam/security-credentials/SharedServerConnectivityRole<ul>
+<li>Sure looks like an AWS server.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>Congratulations!  You have successfully set up this AWS environment for strong logging with Cloudtrail and Config, granular communication with Security Groups and nACLs, intelligent threat detection with AWS GuardDuty and removed additional admin port risk by configuring AWS System Manager.</p>
+<p>If you have reached the bottom of this page with time to spare, there is <a href="extracredit/">Extra Credit</a> available.</p>
+<p>Finally, make sure to <a href="cleanup/">Clean up</a> your environment to ensure you don't have any continuing charges.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = ".",
+                shortcuts = {"search": 83, "next": 78, "help": 191, "previous": 80};
+        </script>
+        <script src="js/base.js" defer></script>
+        <script src="search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 1.0.4
+Build Date UTC : 2021-06-09 22:19:17
+-->
